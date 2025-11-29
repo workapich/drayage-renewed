@@ -1,0 +1,74 @@
+---
+alwaysApply: true
+---
+/**
+ * Project Coding Rules
+ * --------------------
+ * These rules help ensure code quality, consistency, and maintainability in the Drayage Bid Portal project.
+ * They apply to all contributors.
+ */
+
+/* GENERAL */
+- Always use TypeScript for all application and library code.
+- All files must use ES Module syntax (`import`/`export`).
+- Use semicolons and trailing commas where appropriate.
+- Use double quotes for strings in JSON; single quotes in TypeScript and JS.
+- End files with a single newline.
+
+/* PROJECT STRUCTURE */
+- Organize code by feature where possible (see `src/features`).
+- Shared code belongs in `src/components` or `src/lib`.
+- All global types go in `src/types`.
+- Keep mock data, utility logic, and fake services in `src/lib` (until a real backend is implemented).
+- When introducing real APIs, keep API client logic and integration in `src/lib/api-client.ts`; migrate data/mock logic away from client and into API.
+
+/* NAMING CONVENTIONS */
+- Use camelCase for variables and functions.
+- Use PascalCase for React components and types.
+- Use kebab-case for file/folder names except React components (which use PascalCase).
+
+/* TYPESCRIPT RULES */
+- Always use explicit types for public APIs, exported functions, and object shapes.
+- Avoid `any`. Use appropriate, strict types or generics.
+- Prefer `interface` for object shape/type definitions that may be extended, especially for app models.
+
+/* REACT RULES */
+- Use function components with arrow functions: `const Component = () => {}`.
+- Use hooks for state and side effects.
+- Do not use class components.
+- Co-locate related styles (CSS, Tailwind, etc.) with their components.
+
+/* STATE/DATA RULES */
+- Use TanStack Query for remote or asynchronous data (via mock API or real API backend).
+- Use local React state for form/UI logic only.
+- Do not mutate data directly; always use immutable patterns.
+- **When using mock data:** All CRUD/data logic resides in local utility functions with delay/promises for simulating network; no backend required.
+- **When using real API:** All CRUD/data logic must go via real API endpoints (with TanStack Query for fetching/mutations). Remove mock logic as endpoints are implemented.
+
+/* AUTHENTICATION & STORAGE */
+- Never store secrets or sensitive info on client.
+- Use `localStorage` for auth tokens via utility methods in `src/lib/api-client.ts`.
+- Always access auth state via proper abstractions (`src/lib/auth.ts`).
+- **Mock Auth:** Simulate email/password authentication and token storage; verify using static data and utility methods.
+- **Real Auth:** Integrate with backend endpoints for authentication and token refresh; remove all in-memory/mock checks.
+
+/* TESTING & MOCKS */
+- Use mock data loaders/utilities for all tests and local development (until real API is integrated).
+- When moving to real API, update all tests and code to hit real endpoints and use real data schemas.
+- Avoid direct usage of `localStorage` APIs; always use provided abstractions.
+
+/* LINTING & FORMATTING */
+- Run `npm run lint` before pushing.
+- Use Prettier formatting (default config).
+- Address all TypeScript and ESLint errors and warnings before commit.
+
+/* DOCUMENTATION */
+- Document all exported functions, classes, types, and APIs.
+- Write clear, concise README updates for major changes.
+- Clearly comment mock implementations and update documentation as code migrates to real API.
+
+/* GIT RULES */
+- Do not commit `node_modules`, local artifacts, secrets, or build output.
+- Respect `.gitignore` settings.
+
+
