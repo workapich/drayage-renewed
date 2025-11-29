@@ -1,0 +1,192 @@
+{
+  "common": {
+    "appName": "Drayage Bid Portal",
+    "tagline": "Secure access for vendors and admins",
+    "copyright": "© 2025 Drayage Services. All rights reserved.",
+    "back": "Back",
+    "logout": "Logout →",
+    "loading": "Loading portal…",
+    "cancel": "Cancel",
+    "or": "Or"
+  },
+  "auth": {
+    "login": {
+      "title": "Vendor Entry",
+      "description": "Enter your credentials to access the bid portal.",
+      "email": "Email",
+      "emailPlaceholder": "Enter your email",
+      "password": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "button": "Login",
+      "buttonLoading": "Logging in...",
+      "registerButton": "Register",
+      "backToLogin": "Back to Login",
+      "error": "Unable to log in. Please try again."
+    },
+    "register": {
+      "tagline": "Create a vendor account",
+      "title": "Create Account",
+      "description": "Enter your company MCID, contact email, and password.",
+      "mcid": "MCID",
+      "mcidPlaceholder": "MC-123456",
+      "email": "Email",
+      "emailPlaceholder": "name@company.com",
+      "password": "Password",
+      "passwordPlaceholder": "Enter a strong password",
+      "passwordHint": "Use at least 6 characters.",
+      "button": "Register",
+      "buttonLoading": "Registering...",
+      "error": "Registration failed. Please try again."
+    },
+    "emailConfirmation": {
+      "tagline": "One last step to activate your access",
+      "title": "Enter Confirmation Code",
+      "description": "We've sent a 6-digit code to {{email}}",
+      "awaitingEmail": "Awaiting email...",
+      "button": "Confirm Email",
+      "buttonLoading": "Confirming...",
+      "errorInvalidCode": "Please enter a 6-digit code.",
+      "error": "Invalid confirmation code. Please try again.",
+      "success": "Email confirmed! You can now log in."
+    },
+    "errors": {
+      "invalidCredentials": "Invalid credentials",
+      "accountBlocked": "Your account has been blocked. Please contact support.",
+      "vendorInactive": "Your vendor profile is inactive.",
+      "emailExists": "An account with this email already exists.",
+      "registrationSuccess": "Registration successful. Please enter the 6-digit confirmation code.",
+      "invalidConfirmationCode": "Invalid confirmation code",
+      "noPendingRegistration": "No pending registration found for this email.",
+      "noRefreshToken": "No refresh token available",
+      "authenticationFailed": "Authentication failed"
+    }
+  },
+  "vendor": {
+    "cities": {
+      "title": "Vendor Portal",
+      "pageTitle": "Submit Your Bid",
+      "description": "Select the starting city to view inland destinations and submit rates.",
+      "step1Title": "Choose Port Location",
+      "step1Description": "Select where the load starts",
+      "step2Title": "Choose Destination & Input Rates",
+      "step2Description": "Complete inland routing",
+      "searchPlaceholder": "Search for a city..."
+    },
+    "bid": {
+      "backToCities": "Back to Cities",
+      "portNotFound": "Port location not found.",
+      "selectDestination": "Select Destination",
+      "inlandRoutes": "{{city}} Inland Routes",
+      "addDestination": "+ Add a New Destination",
+      "noDestinations": "No inland destinations available for this port yet.",
+      "ratesSubmitted": "Rates submitted",
+      "portLocation": "Port Location",
+      "ratesSaved": "Rates saved for {{city}}, {{state}}",
+      "requiredFees": "Required Fees",
+      "baseRate": "Base Rate *",
+      "fsc": "FSC *",
+      "total": "Total *",
+      "accessorials": "Accessorials",
+      "reset": "Reset",
+      "submitButton": "Submit Bid",
+      "submitButtonLoading": "Submitting…"
+    }
+  },
+  "admin": {
+    "dashboard": {
+      "title": "Admin Dashboard",
+      "vendors": {
+        "label": "Manage",
+        "title": "Vendors",
+        "description": "View and onboard vendors",
+        "button": "Go to Vendor Management"
+      },
+      "route": {
+        "label": "Create",
+        "title": "Route",
+        "description": "Add new shipping corridors",
+        "button": "Create New Route"
+      },
+      "totalBids": {
+        "title": "Total Bids",
+        "last24h": "Last 24h:",
+        "last7d": "Last 7d:"
+      },
+      "activeRoutes": {
+        "title": "Active Routes",
+        "description": "Available destinations currently receiving bids"
+      },
+      "viewRates": {
+        "label": "Select City",
+        "title": "View Vendor Rates",
+        "searchPlaceholder": "Search for a city...",
+        "bidsCount": "{{count}} bids"
+      }
+    },
+    "vendors": {
+      "backToDashboard": "Back to Dashboard",
+      "title": "Vendor Management",
+      "description": "Manage all vendors in the system and whitelist new emails.",
+      "whitelistButton": "Whitelist Vendor Email",
+      "table": {
+        "mcid": "MC-ID",
+        "email": "Email",
+        "status": "Status",
+        "totalBids": "Total Bids",
+        "joined": "Joined",
+        "actions": "Actions"
+      },
+      "noVendors": "No vendors found.",
+      "actions": {
+        "unblock": "Unblock vendor",
+        "block": "Block vendor",
+        "delete": "Delete vendor"
+      }
+    },
+    "rates": {
+      "title": "Rate Management",
+      "backToCities": "Back to Cities",
+      "cityNotFound": "City not found.",
+      "selectDestination": "Select Destination",
+      "addButton": "+ Add",
+      "noDestinations": "No inland destinations yet.",
+      "ratesCount": "{{count}} rates",
+      "viewingRates": "Viewing Rates For",
+      "routeTitle": "{{port}} → {{destination}}",
+      "searchPlaceholder": "Search by vendor ID or email",
+      "table": {
+        "vendorId": "Vendor ID",
+        "email": "Email",
+        "destination": "Destination",
+        "submitted": "Submitted",
+        "baseRate": "Base Rate",
+        "fsc": "FSC %",
+        "total": "Total"
+      },
+      "noBids": "No bids found for this destination."
+    },
+    "addVendor": {
+      "title": "Add New Vendor(s)",
+      "emailPlaceholder": "Email Address",
+      "emailHint": "Press Enter or comma to add multiple emails.",
+      "importButton": "Import from CSV",
+      "importHint": "Upload a CSV file with email addresses (one per line or comma-separated).",
+      "addButton": "Add Vendor",
+      "csvNotAvailable": "CSV import is not available in the mock environment.",
+      "allEmailsRegistered": "All provided emails are already registered.",
+      "vendorsAdded": "{{count}} vendor(s) added."
+    },
+    "routeCreation": {
+      "title": "Create New Route",
+      "startingCity": "Starting City",
+      "startingCityPlaceholder": "Select port city",
+      "endingCity": "Ending City",
+      "endingCityPlaceholder": "Select inland city",
+      "createButton": "Create Route",
+      "createButtonLoading": "Creating...",
+      "success": "Route created successfully.",
+      "error": "Unable to create route."
+    }
+  }
+}
+

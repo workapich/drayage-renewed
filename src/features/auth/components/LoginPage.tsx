@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Lock, Mail } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from '../hooks/useAuth'
 
 export const LoginPage = () => {
+  const { t } = useTranslation()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -20,7 +22,6 @@ export const LoginPage = () => {
     () => (location.state as { message?: string })?.message ?? '',
     [location.state],
   )
-  const [infoMessage, setInfoMessage] = useState(initialMessage)
 
   useEffect(() => {
     if (initialMessage) {
@@ -36,7 +37,7 @@ export const LoginPage = () => {
       const user = await login(email, password)
       navigate(user.role === 'admin' ? '/admin/dashboard' : '/vendor/cities', { replace: true })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unable to log in. Please try again.')
+      setError(err instanceof Error ? err.message : t('auth.login.error'))
     } finally {
       setIsLoading(false)
     }
@@ -57,12 +58,12 @@ export const LoginPage = () => {
             </svg>
           </div>
           <div>
-            <p className="text-lg font-semibold text-slate-900">Drayage Bid Portal</p>
-            <p className="text-sm text-slate-500">Secure access for vendors and admins</p>
+            <p className="text-lg font-semibold text-slate-900">{t('common.appName')}</p>
+            <p className="text-sm text-slate-500">{t('common.tagline')}</p>
           </div>
         </div>
         <Button variant="ghost" className="text-sm font-semibold text-slate-600" onClick={() => navigate('/register')}>
-          Register
+          {t('auth.login.registerButton')}
         </Button>
       </div>
 
@@ -73,16 +74,16 @@ export const LoginPage = () => {
               <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#1f62f7] shadow-inner">
                 <Lock className="h-8 w-8 text-white" />
               </div>
-              <CardTitle className="text-2xl font-semibold text-slate-900">Vendor Entry</CardTitle>
+              <CardTitle className="text-2xl font-semibold text-slate-900">{t('auth.login.title')}</CardTitle>
               <CardDescription className="text-base">
-                Enter your credentials to access the bid portal.
+                {t('auth.login.description')}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-5">
-                {infoMessage && (
+                {initialMessage && (
                   <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-                    {infoMessage}
+                    {initialMessage}
                   </div>
                 )}
                 {error && (
@@ -93,7 +94,7 @@ export const LoginPage = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-sm font-medium text-slate-700">
-                    Email
+                    {t('auth.login.email')}
                   </Label>
                   <div className="relative">
                     <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -101,7 +102,7 @@ export const LoginPage = () => {
                       id="email"
                       type="email"
                       autoComplete="email"
-                      placeholder="Enter your email"
+                      placeholder={t('auth.login.emailPlaceholder')}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="h-12 border-slate-200 pl-10 text-base"
@@ -112,7 +113,7 @@ export const LoginPage = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="password" className="text-sm font-medium text-slate-700">
-                    Password
+                    {t('auth.login.password')}
                   </Label>
                   <div className="relative">
                     <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -120,7 +121,7 @@ export const LoginPage = () => {
                       id="password"
                       type="password"
                       autoComplete="current-password"
-                      placeholder="Enter your password"
+                      placeholder={t('auth.login.passwordPlaceholder')}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className="h-12 border-slate-200 pl-10 text-base"
@@ -130,7 +131,7 @@ export const LoginPage = () => {
                 </div>
 
                 <Button type="submit" className="mt-2 h-12 w-full text-base font-semibold" disabled={isLoading}>
-                  {isLoading ? 'Logging in...' : 'Login'}
+                  {isLoading ? t('auth.login.buttonLoading') : t('auth.login.button')}
                 </Button>
 
                 <div className="relative py-2">
@@ -138,7 +139,7 @@ export const LoginPage = () => {
                     <div className="w-full border-t border-slate-200" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase text-slate-400">
-                    <span className="bg-white px-2">Or</span>
+                    <span className="bg-white px-2">{t('common.or')}</span>
                   </div>
                 </div>
 
@@ -148,13 +149,13 @@ export const LoginPage = () => {
                   className="h-12 w-full border-slate-200 text-base font-semibold"
                   onClick={() => navigate('/register')}
                 >
-                  Register
+                  {t('auth.login.registerButton')}
                 </Button>
               </form>
             </CardContent>
           </Card>
           <p className="mt-8 text-center text-xs uppercase tracking-wider text-slate-400">
-            © 2025 Drayage Services. All rights reserved.
+            {t('common.copyright')}
           </p>
         </div>
       </main>

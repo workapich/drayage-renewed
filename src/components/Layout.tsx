@@ -1,7 +1,8 @@
 import { ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Truck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useAuth } from '@/features/auth/context/AuthContext'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useNavigate } from 'react-router-dom'
 import clsx from 'clsx'
 
@@ -20,14 +21,16 @@ export const Layout = ({
   children,
   showBackButton = false,
   backTo,
-  backLabel = 'Back',
+  backLabel,
   showLogout = false,
   title,
   subtitle,
   fullWidth = false,
 }: LayoutProps) => {
+  const { t } = useTranslation()
   const { logout } = useAuth()
   const navigate = useNavigate()
+  const defaultBackLabel = backLabel ?? t('common.back')
 
   const handleLogout = async () => {
     await logout()
@@ -43,7 +46,7 @@ export const Layout = ({
               <Truck className="h-6 w-6 text-white" />
             </div>
             <div>
-              <p className="text-lg font-semibold text-slate-900">Drayage Bid Portal</p>
+              <p className="text-lg font-semibold text-slate-900">{t('common.appName')}</p>
               {subtitle && <p className="text-sm text-slate-500">{subtitle}</p>}
             </div>
           </div>
@@ -51,10 +54,16 @@ export const Layout = ({
             {showBackButton && (
               <Button
                 variant="ghost"
-                onClick={() => navigate(backTo || -1)}
+                onClick={() => {
+                  if (backTo) {
+                    navigate(backTo)
+                  } else {
+                    navigate(-1)
+                  }
+                }}
                 className="text-sm font-semibold text-slate-600 hover:text-blue-600"
               >
-                ← {backLabel}
+                ← {defaultBackLabel}
               </Button>
             )}
             {showLogout && (
@@ -63,7 +72,7 @@ export const Layout = ({
                 onClick={handleLogout}
                 className="text-sm font-semibold uppercase tracking-wide text-slate-600 hover:text-blue-600"
               >
-                Logout →
+                {t('common.logout')}
               </Button>
             )}
           </div>

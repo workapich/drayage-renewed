@@ -1,12 +1,14 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Mail } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from '../hooks/useAuth'
 
 export const EmailConfirmationPage = () => {
+  const { t } = useTranslation()
   const [code, setCode] = useState(['', '', '', '', '', ''])
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -59,7 +61,7 @@ export const EmailConfirmationPage = () => {
 
     const codeString = code.join('')
     if (codeString.length !== 6) {
-      setError('Please enter a 6-digit code.')
+      setError(t('auth.emailConfirmation.errorInvalidCode'))
       return
     }
 
@@ -68,10 +70,10 @@ export const EmailConfirmationPage = () => {
       await confirmEmail(email, codeString)
       navigate('/login', {
         replace: true,
-        state: { message: 'Email confirmed! You can now log in.' },
+        state: { message: t('auth.emailConfirmation.success') },
       })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Invalid confirmation code. Please try again.')
+      setError(err instanceof Error ? err.message : t('auth.emailConfirmation.error'))
     } finally {
       setIsLoading(false)
     }
@@ -92,12 +94,12 @@ export const EmailConfirmationPage = () => {
             </svg>
           </div>
           <div>
-            <p className="text-lg font-semibold text-slate-900">Drayage Bid Portal</p>
-            <p className="text-sm text-slate-500">One last step to activate your access</p>
+            <p className="text-lg font-semibold text-slate-900">{t('common.appName')}</p>
+            <p className="text-sm text-slate-500">{t('auth.emailConfirmation.tagline')}</p>
           </div>
         </div>
         <Button variant="ghost" className="text-sm font-semibold text-slate-600" onClick={() => navigate('/login')}>
-          Back to Login
+          {t('auth.login.backToLogin')}
         </Button>
       </div>
 
@@ -108,9 +110,9 @@ export const EmailConfirmationPage = () => {
               <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#1f62f7] shadow-inner">
                 <Mail className="h-8 w-8 text-white" />
               </div>
-              <CardTitle className="text-2xl font-semibold text-slate-900">Enter Confirmation Code</CardTitle>
+              <CardTitle className="text-2xl font-semibold text-slate-900">{t('auth.emailConfirmation.title')}</CardTitle>
               <CardDescription className="text-base">
-                {email ? `We've sent a 6-digit code to ${email}` : 'Awaiting email...'}
+                {email ? t('auth.emailConfirmation.description', { email }) : t('auth.emailConfirmation.awaitingEmail')}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -125,7 +127,7 @@ export const EmailConfirmationPage = () => {
                   {code.map((digit, index) => (
                     <Input
                       key={index}
-                      ref={(el) => (inputRefs.current[index] = el)}
+                      ref={(el) => { inputRefs.current[index] = el }}
                       inputMode="numeric"
                       aria-label={`Digit ${index + 1}`}
                       maxLength={1}
@@ -143,13 +145,13 @@ export const EmailConfirmationPage = () => {
                   className="h-12 w-full text-base font-semibold"
                   disabled={isLoading || code.join('').length !== 6}
                 >
-                  {isLoading ? 'Confirming...' : 'Confirm Email'}
+                  {isLoading ? t('auth.emailConfirmation.buttonLoading') : t('auth.emailConfirmation.button')}
                 </Button>
               </form>
             </CardContent>
           </Card>
           <p className="mt-8 text-center text-xs uppercase tracking-wider text-slate-400">
-            © 2025 Drayage Services. All rights reserved.
+            {t('common.copyright')}
           </p>
         </div>
       </main>

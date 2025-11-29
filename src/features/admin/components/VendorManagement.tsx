@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Ban, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -22,6 +23,7 @@ const statusStyles: Record<VendorStatus, string> = {
 }
 
 export const VendorManagement = () => {
+  const { t } = useTranslation()
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const { data: vendors = [] } = useVendorsQuery()
   const statusMutation = useVendorStatusMutation()
@@ -37,19 +39,19 @@ export const VendorManagement = () => {
   }
 
   return (
-    <Layout showBackButton backTo="/admin/dashboard" backLabel="Back to Dashboard" showLogout fullWidth>
+    <Layout showBackButton backTo="/admin/dashboard" backLabel={t('admin.vendors.backToDashboard')} showLogout fullWidth>
       <section className="mx-auto w-full max-w-6xl space-y-8">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Admin Dashboard</p>
-            <h2 className="mt-2 text-3xl font-semibold text-slate-900">Vendor Management</h2>
-            <p className="text-sm text-slate-500">Manage all vendors in the system and whitelist new emails.</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">{t('admin.dashboard.title')}</p>
+            <h2 className="mt-2 text-3xl font-semibold text-slate-900">{t('admin.vendors.title')}</h2>
+            <p className="text-sm text-slate-500">{t('admin.vendors.description')}</p>
           </div>
           <Button
             onClick={() => setIsAddModalOpen(true)}
             className="h-12 rounded-2xl bg-[#1f62f7] px-5 text-sm font-semibold text-white hover:bg-[#1a4fd4]"
           >
-            Whitelist Vendor Email
+            {t('admin.vendors.whitelistButton')}
           </Button>
         </div>
 
@@ -57,12 +59,12 @@ export const VendorManagement = () => {
           <Table>
             <TableHeader>
               <TableRow className="border-b border-slate-100 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                <TableHead>MC-ID</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Total Bids</TableHead>
-                <TableHead>Joined</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>{t('admin.vendors.table.mcid')}</TableHead>
+                <TableHead>{t('admin.vendors.table.email')}</TableHead>
+                <TableHead>{t('admin.vendors.table.status')}</TableHead>
+                <TableHead>{t('admin.vendors.table.totalBids')}</TableHead>
+                <TableHead>{t('admin.vendors.table.joined')}</TableHead>
+                <TableHead className="text-right">{t('admin.vendors.table.actions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -85,7 +87,7 @@ export const VendorManagement = () => {
                             ? 'border-emerald-100 bg-emerald-50 text-emerald-600'
                             : 'border-rose-100 bg-rose-50 text-rose-600'
                         }`}
-                        title={vendor.status === 'blocked' ? 'Unblock vendor' : 'Block vendor'}
+                        title={vendor.status === 'blocked' ? t('admin.vendors.actions.unblock') : t('admin.vendors.actions.block')}
                         onClick={() => toggleBlockStatus(vendor.id, vendor.status)}
                         disabled={statusMutation.isPending}
                       >
@@ -93,7 +95,7 @@ export const VendorManagement = () => {
                       </button>
                       <button
                         className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 hover:bg-slate-50"
-                        title="Delete vendor"
+                        title={t('admin.vendors.actions.delete')}
                         onClick={() => handleDelete(vendor.id)}
                         disabled={deleteMutation.isPending}
                       >
@@ -106,7 +108,7 @@ export const VendorManagement = () => {
               {vendors.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={6} className="py-10 text-center text-sm text-slate-500">
-                    No vendors found.
+                    {t('admin.vendors.noVendors')}
                   </TableCell>
                 </TableRow>
               )}

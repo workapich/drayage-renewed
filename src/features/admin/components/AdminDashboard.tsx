@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Users, MapPin, Clock, TrendingUp, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,6 +10,7 @@ import { getPortCities, getBidCountsByCity } from '@/lib/mock-data'
 import { useStatisticsQuery } from '@/lib/query-hooks'
 
 export const AdminDashboard = () => {
+  const { t } = useTranslation()
   const [searchQuery, setSearchQuery] = useState('')
   const [isRouteModalOpen, setIsRouteModalOpen] = useState(false)
   const navigate = useNavigate()
@@ -23,7 +25,7 @@ export const AdminDashboard = () => {
   const getCityDisplayName = (city: typeof cities[0]) => (city.state ? `${city.name}, ${city.state}` : city.name)
 
   return (
-    <Layout showLogout subtitle="Admin Dashboard" fullWidth>
+    <Layout showLogout subtitle={t('admin.dashboard.title')} fullWidth>
       <section className="mx-auto w-full max-w-6xl space-y-10">
         <div className="grid gap-6 lg:grid-cols-[1fr_1fr]">
           <div className="rounded-[28px] border border-blue-100 bg-gradient-to-br from-[#e4ecff] to-[#f5f7ff] p-8 shadow-[0_30px_70px_rgba(45,70,140,0.25)]">
@@ -32,16 +34,16 @@ export const AdminDashboard = () => {
                 <Users className="h-7 w-7" />
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.4em] text-blue-500">Manage</p>
-                <h2 className="text-2xl font-semibold text-slate-900">Vendors</h2>
-                <p className="text-sm text-slate-600">View and onboard vendors</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.4em] text-blue-500">{t('admin.dashboard.vendors.label')}</p>
+                <h2 className="text-2xl font-semibold text-slate-900">{t('admin.dashboard.vendors.title')}</h2>
+                <p className="text-sm text-slate-600">{t('admin.dashboard.vendors.description')}</p>
               </div>
             </div>
             <Button
               className="mt-6 h-12 w-full rounded-2xl bg-[#1f62f7] text-base font-semibold text-white hover:bg-[#1a4fd4]"
               onClick={() => navigate('/admin/vendors')}
             >
-              Go to Vendor Management
+              {t('admin.dashboard.vendors.button')}
             </Button>
           </div>
 
@@ -51,9 +53,9 @@ export const AdminDashboard = () => {
                 <MapPin className="h-7 w-7" />
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.4em] text-emerald-500">Create</p>
-                <h2 className="text-2xl font-semibold text-slate-900">Route</h2>
-                <p className="text-sm text-slate-600">Add new shipping corridors</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.4em] text-emerald-500">{t('admin.dashboard.route.label')}</p>
+                <h2 className="text-2xl font-semibold text-slate-900">{t('admin.dashboard.route.title')}</h2>
+                <p className="text-sm text-slate-600">{t('admin.dashboard.route.description')}</p>
               </div>
             </div>
             <Button
@@ -61,7 +63,7 @@ export const AdminDashboard = () => {
               variant="outline"
               onClick={() => setIsRouteModalOpen(true)}
             >
-              Create New Route
+              {t('admin.dashboard.route.button')}
             </Button>
           </div>
         </div>
@@ -70,40 +72,40 @@ export const AdminDashboard = () => {
           <div className="rounded-[24px] border border-white/70 bg-white/90 p-6 shadow-[0_25px_60px_rgba(15,23,42,0.1)] backdrop-blur">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Total Bids</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-400">{t('admin.dashboard.totalBids.title')}</p>
                 <p className="mt-2 text-4xl font-semibold text-slate-900">{stats?.totalBids ?? '—'}</p>
               </div>
               <Clock className="h-8 w-8 text-slate-300" />
             </div>
             <div className="mt-4 flex gap-8 text-sm text-slate-500">
-              <span>Last 24h: <strong className="text-slate-900">{stats?.bidsLast24h ?? '—'}</strong></span>
-              <span>Last 7d: <strong className="text-slate-900">{stats?.bidsLast7d ?? '—'}</strong></span>
+              <span>{t('admin.dashboard.totalBids.last24h')} <strong className="text-slate-900">{stats?.bidsLast24h ?? '—'}</strong></span>
+              <span>{t('admin.dashboard.totalBids.last7d')} <strong className="text-slate-900">{stats?.bidsLast7d ?? '—'}</strong></span>
             </div>
           </div>
 
           <div className="rounded-[24px] border border-white/70 bg-white/90 p-6 shadow-[0_25px_60px_rgba(15,23,42,0.1)] backdrop-blur">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Active Routes</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-400">{t('admin.dashboard.activeRoutes.title')}</p>
                 <p className="mt-2 text-4xl font-semibold text-slate-900">{stats?.activeRoutes ?? '—'}</p>
               </div>
               <TrendingUp className="h-8 w-8 text-slate-300" />
             </div>
-            <p className="mt-4 text-sm text-slate-500">Available destinations currently receiving bids</p>
+            <p className="mt-4 text-sm text-slate-500">{t('admin.dashboard.activeRoutes.description')}</p>
           </div>
         </div>
 
         <div className="rounded-[32px] border border-white/70 bg-white/95 p-8 shadow-[0_35px_75px_rgba(15,23,42,0.12)] backdrop-blur">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Select City</p>
-              <h3 className="mt-2 text-2xl font-semibold text-slate-900">View Vendor Rates</h3>
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">{t('admin.dashboard.viewRates.label')}</p>
+              <h3 className="mt-2 text-2xl font-semibold text-slate-900">{t('admin.dashboard.viewRates.title')}</h3>
             </div>
             <div className="relative w-full max-w-xs">
               <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
               <Input
                 type="text"
-                placeholder="Search for a city..."
+                placeholder={t('admin.dashboard.viewRates.searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="h-11 rounded-2xl border-slate-200 pl-12"
@@ -122,7 +124,7 @@ export const AdminDashboard = () => {
                   className="flex flex-col rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-300 hover:bg-blue-50"
                 >
                   <span>{displayName}</span>
-                  <span className="mt-1 text-xs font-medium text-slate-400">{bidCount} bids</span>
+                  <span className="mt-1 text-xs font-medium text-slate-400">{t('admin.dashboard.viewRates.bidsCount', { count: bidCount })}</span>
                 </button>
               )
             })}

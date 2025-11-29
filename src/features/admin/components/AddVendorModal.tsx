@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -22,6 +23,7 @@ const generateId = () => (crypto.randomUUID?.() ?? `v-${Date.now()}`)
 const generateMcid = () => `MC-${Math.floor(100000 + Math.random() * 900000)}`
 
 export const AddVendorModal = ({ open, onOpenChange }: AddVendorModalProps) => {
+  const { t } = useTranslation()
   const [emails, setEmails] = useState<string[]>([])
   const [inputValue, setInputValue] = useState('')
   const [feedback, setFeedback] = useState<string | null>(null)
@@ -43,7 +45,7 @@ export const AddVendorModal = ({ open, onOpenChange }: AddVendorModalProps) => {
   }
 
   const handleCSVImport = () => {
-    setFeedback('CSV import is not available in the mock environment.')
+    setFeedback(t('admin.addVendor.csvNotAvailable'))
   }
 
   const handleAdd = () => {
@@ -51,7 +53,7 @@ export const AddVendorModal = ({ open, onOpenChange }: AddVendorModalProps) => {
     const newEmails = emails.filter((email) => !existing.has(email))
 
     if (newEmails.length === 0) {
-      setFeedback('All provided emails are already registered.')
+      setFeedback(t('admin.addVendor.allEmailsRegistered'))
       return
     }
 
@@ -67,7 +69,7 @@ export const AddVendorModal = ({ open, onOpenChange }: AddVendorModalProps) => {
     })
 
     queryClient.invalidateQueries({ queryKey: queryKeys.vendors })
-    setFeedback(`${newEmails.length} vendor${newEmails.length > 1 ? 's' : ''} added.`)
+    setFeedback(t('admin.addVendor.vendorsAdded', { count: newEmails.length }))
     setEmails([])
     setInputValue('')
     setTimeout(() => {
@@ -81,19 +83,19 @@ export const AddVendorModal = ({ open, onOpenChange }: AddVendorModalProps) => {
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="text-center text-2xl font-semibold text-slate-900">
-            Add New Vendor(s)
+            {t('admin.addVendor.title')}
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <Input
-              placeholder="Email Address"
+              placeholder={t('admin.addVendor.emailPlaceholder')}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
               className="h-12 rounded-2xl border-slate-200"
             />
-            <p className="text-xs text-slate-500">Press Enter or comma to add multiple emails.</p>
+            <p className="text-xs text-slate-500">{t('admin.addVendor.emailHint')}</p>
           </div>
 
           {emails.length > 0 && (
@@ -115,9 +117,9 @@ export const AddVendorModal = ({ open, onOpenChange }: AddVendorModalProps) => {
           <div className="space-y-2">
             <Button variant="outline" className="h-11 w-full rounded-2xl" onClick={handleCSVImport}>
               <Upload className="mr-2 h-4 w-4" />
-              Import from CSV
+              {t('admin.addVendor.importButton')}
             </Button>
-            <p className="text-xs text-slate-500">Upload a CSV file with email addresses (one per line or comma-separated).</p>
+            <p className="text-xs text-slate-500">{t('admin.addVendor.importHint')}</p>
           </div>
 
           {feedback && (
@@ -128,14 +130,14 @@ export const AddVendorModal = ({ open, onOpenChange }: AddVendorModalProps) => {
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} className="rounded-2xl">
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button
             onClick={handleAdd}
             disabled={emails.length === 0}
             className="rounded-2xl bg-[#1f62f7] px-6 text-white hover:bg-[#1a4fd4]"
           >
-            Add Vendor
+            {t('admin.addVendor.addButton')}
           </Button>
         </DialogFooter>
       </DialogContent>

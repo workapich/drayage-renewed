@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Check, MapPin, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Layout } from '@/components/Layout'
 import { getCityById } from '@/lib/mock-data'
-import { useAuth } from '@/features/auth/context/AuthContext'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useBidsByPortQuery, useBidsByRouteQuery, useRoutesQuery, useSubmitBidMutation } from '@/lib/query-hooks'
 
 const emptyAccessorials = {
@@ -27,8 +28,8 @@ const parseNumeric = (value: string) => {
 }
 
 export const BidSubmissionPage = () => {
+  const { t } = useTranslation()
   const { portCityId } = useParams<{ portCityId: string }>()
-  const navigate = useNavigate()
   const { user } = useAuth()
   const { data: routes = [] } = useRoutesQuery(portCityId)
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null)
@@ -68,11 +69,21 @@ export const BidSubmissionPage = () => {
     }
   }, [vendorBid])
 
+  const routeStatus = useMemo(() => {
+    return routes.reduce<Record<string, 'submitted' | 'pending' | 'new'>>((acc, route) => {
+      const bid = portBids.find((item) => item.vendorId === user?.vendorId && item.routeId === route.id)
+      if (bid?.status === 'submitted') acc[route.id] = 'submitted'
+      else if (bid) acc[route.id] = 'pending'
+      else acc[route.id] = 'new'
+      return acc
+    }, {})
+  }, [portBids, routes, user?.vendorId])
+
   if (!portCity || !portCityId) {
     return (
-      <Layout showBackButton backTo="/vendor/cities" backLabel="Back to Cities" showLogout fullWidth>
+      <Layout showBackButton backTo="/vendor/cities" backLabel={t('vendor.bid.backToCities')} showLogout fullWidth>
         <div className="rounded-3xl border border-white/70 bg-white/90 p-8 text-center text-lg font-semibold text-slate-700 shadow-[0_40px_80px_rgba(15,23,42,0.1)]">
-          Port location not found.
+          {t('vendor.bid.portNotFound')}
         </div>
       </Layout>
     )
@@ -116,26 +127,16 @@ export const BidSubmissionPage = () => {
         prepull: numericAccessorials.prepull || 0,
       },
     })
-    setStatusMessage(`Rates saved for ${selectedRoute.inlandCity.name}, ${selectedRoute.inlandCity.state}`)
+    setStatusMessage(t('vendor.bid.ratesSaved', { city: selectedRoute.inlandCity.name, state: selectedRoute.inlandCity.state }))
   }
 
   const resetAccessorials = () => setAccessorials(emptyAccessorials)
-
-  const routeStatus = useMemo(() => {
-    return routes.reduce<Record<string, 'submitted' | 'pending' | 'new'>>((acc, route) => {
-      const bid = portBids.find((item) => item.vendorId === user?.vendorId && item.routeId === route.id)
-      if (bid?.status === 'submitted') acc[route.id] = 'submitted'
-      else if (bid) acc[route.id] = 'pending'
-      else acc[route.id] = 'new'
-      return acc
-    }, {})
-  }, [portBids, routes, user?.vendorId])
 
   return (
     <Layout
       showBackButton
       backTo="/vendor/cities"
-      backLabel="Back to Cities"
+      backLabel={t('vendor.bid.backToCities')}
       showLogout
       fullWidth
       subtitle={`${portCity.name}, ${portCity.state ?? ''}`.trim()}
@@ -143,16 +144,16 @@ export const BidSubmissionPage = () => {
       <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
         <div className="rounded-3xl border border-white/70 bg-white/90 shadow-[0_35px_60px_rgba(15,23,42,0.08)]">
           <div className="border-b border-slate-100 px-6 py-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Select Destination</p>
-            <p className="mt-1 text-lg font-semibold text-slate-900">{portCity.name} Inland Routes</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">{t('vendor.bid.selectDestination')}</p>
+            <p className="mt-1 text-lg font-semibold text-slate-900">{t('vendor.bid.inlandRoutes', { city: portCity.name })}</p>
           </div>
           <button className="mx-6 mt-5 flex h-12 items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-200 bg-slate-50 text-sm font-semibold text-slate-500 hover:border-blue-300 hover:text-blue-600">
-            + Add a New Destination
+            {t('vendor.bid.addDestination')}
           </button>
           <div className="mt-4 max-h-[620px] space-y-3 overflow-y-auto px-4 pb-6">
             {routes.length === 0 && (
               <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-16 text-center text-sm font-medium text-slate-500">
-                No inland destinations available for this port yet.
+                {t('vendor.bid.noDestinations')}
               </div>
             )}
             {routes.map((route) => {
@@ -180,7 +181,7 @@ export const BidSubmissionPage = () => {
                   {status === 'submitted' && !isSelected && (
                     <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-emerald-600">
                       <Check className="h-3 w-3" />
-                      Rates submitted
+                      {t('vendor.bid.ratesSubmitted')}
                     </div>
                   )}
                 </button>
@@ -196,7 +197,7 @@ export const BidSubmissionPage = () => {
                 <MapPin className="h-6 w-6" />
               </div>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Port Location</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">{t('vendor.bid.portLocation')}</p>
                 <p className="text-2xl font-semibold text-slate-900">{portCity.name.toUpperCase()}</p>
               </div>
             </div>
@@ -209,11 +210,11 @@ export const BidSubmissionPage = () => {
 
           <div className="mt-8 space-y-10">
             <section>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Required Fees</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">{t('vendor.bid.requiredFees')}</p>
               <div className="mt-4 grid gap-5 md:grid-cols-3">
                 <div className="space-y-2">
                   <Label htmlFor="base-rate" className="text-xs font-semibold text-slate-500">
-                    Base Rate *
+                    {t('vendor.bid.baseRate')}
                   </Label>
                   <div className="relative">
                     <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm text-slate-400">
@@ -231,7 +232,7 @@ export const BidSubmissionPage = () => {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="fsc" className="text-xs font-semibold text-slate-500">
-                    FSC *
+                    {t('vendor.bid.fsc')}
                   </Label>
                   <div className="relative">
                     <Input
@@ -248,7 +249,7 @@ export const BidSubmissionPage = () => {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs font-semibold text-slate-500">Total *</Label>
+                  <Label className="text-xs font-semibold text-slate-500">{t('vendor.bid.total')}</Label>
                   <div className="h-12 rounded-2xl border border-slate-100 bg-slate-50 px-4 text-lg font-semibold text-slate-900">
                     {total > 0 ? formatCurrency(total) : '$0.00'}
                   </div>
@@ -258,7 +259,7 @@ export const BidSubmissionPage = () => {
 
             <section>
               <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Accessorials</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">{t('vendor.bid.accessorials')}</p>
                 <Button
                   type="button"
                   variant="ghost"
@@ -266,7 +267,7 @@ export const BidSubmissionPage = () => {
                   onClick={resetAccessorials}
                 >
                   <RefreshCw className="h-4 w-4" />
-                  Reset
+                  {t('vendor.bid.reset')}
                 </Button>
               </div>
               <div className="mt-4 grid gap-4 md:grid-cols-4">
@@ -306,7 +307,7 @@ export const BidSubmissionPage = () => {
                   : 'bg-slate-200 text-slate-500'
               }`}
             >
-              {submitBidMutation.isPending ? 'Submitting…' : 'Submit Bid'}
+              {submitBidMutation.isPending ? t('vendor.bid.submitButtonLoading') : t('vendor.bid.submitButton')}
             </Button>
           </div>
         </div>

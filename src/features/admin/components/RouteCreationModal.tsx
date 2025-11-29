@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Dialog,
   DialogContent,
@@ -24,6 +25,7 @@ interface RouteCreationModalProps {
 }
 
 export const RouteCreationModal = ({ open, onOpenChange, defaultPortId }: RouteCreationModalProps) => {
+  const { t } = useTranslation()
   const [startingCity, setStartingCity] = useState<string>(defaultPortId ?? '')
   const [endingCity, setEndingCity] = useState<string>('')
   const [feedback, setFeedback] = useState<string | null>(null)
@@ -50,12 +52,12 @@ export const RouteCreationModal = ({ open, onOpenChange, defaultPortId }: RouteC
     if (!startingCity || !endingCity) return
     try {
       await createRouteMutation.mutateAsync({ portCityId: startingCity, inlandCityId: endingCity })
-      setFeedback('Route created successfully.')
+      setFeedback(t('admin.routeCreation.success'))
       setTimeout(() => {
         closeModal()
       }, 600)
     } catch (error) {
-      setFeedback(error instanceof Error ? error.message : 'Unable to create route.')
+      setFeedback(error instanceof Error ? error.message : t('admin.routeCreation.error'))
     }
   }
 
@@ -70,15 +72,15 @@ export const RouteCreationModal = ({ open, onOpenChange, defaultPortId }: RouteC
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-center text-2xl font-semibold text-slate-900">
-            Create New Route
+            {t('admin.routeCreation.title')}
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Starting City</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">{t('admin.routeCreation.startingCity')}</p>
             <Select value={startingCity} onValueChange={setStartingCity}>
               <SelectTrigger className="h-12 rounded-2xl border-slate-200">
-                <SelectValue placeholder="Select port city" />
+                <SelectValue placeholder={t('admin.routeCreation.startingCityPlaceholder')} />
               </SelectTrigger>
               <SelectContent>
                 {portCities.map((city) => (
@@ -91,10 +93,10 @@ export const RouteCreationModal = ({ open, onOpenChange, defaultPortId }: RouteC
           </div>
 
           <div className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">Ending City</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">{t('admin.routeCreation.endingCity')}</p>
             <Select value={endingCity} onValueChange={setEndingCity} disabled={!startingCity}>
               <SelectTrigger className="h-12 rounded-2xl border-slate-200">
-                <SelectValue placeholder="Select inland city" />
+                <SelectValue placeholder={t('admin.routeCreation.endingCityPlaceholder')} />
               </SelectTrigger>
               <SelectContent>
                 {availableInlandCities.map((city) => (
@@ -114,14 +116,14 @@ export const RouteCreationModal = ({ open, onOpenChange, defaultPortId }: RouteC
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={closeModal} disabled={createRouteMutation.isPending}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button
             onClick={handleCreate}
             disabled={!startingCity || !endingCity || createRouteMutation.isPending}
             className="rounded-2xl bg-[#1f62f7] px-6 text-white hover:bg-[#2352d6]"
           >
-            {createRouteMutation.isPending ? 'Creating...' : 'Create Route'}
+            {createRouteMutation.isPending ? t('admin.routeCreation.createButtonLoading') : t('admin.routeCreation.createButton')}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { dataService } from '@/lib/data-service'
 import { storage } from '@/lib/storage'
-import type { AccessorialFees, Bid, VendorStatus } from '@/types'
+import type { AccessorialFees, VendorStatus } from '@/types'
 
 export const queryKeys = {
   vendors: ['vendors'] as const,
@@ -54,7 +54,7 @@ export const useVendorBidCountsQuery = (vendorId?: string) =>
 export const useSubmitBidMutation = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (payload: {
+    mutationFn: async (payload: {
       vendorId: string
       vendorEmail: string
       routeId: string
@@ -76,7 +76,7 @@ export const useSubmitBidMutation = () => {
 export const useCreateRouteMutation = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ portCityId, inlandCityId }: { portCityId: string; inlandCityId: string }) =>
+    mutationFn: async ({ portCityId, inlandCityId }: { portCityId: string; inlandCityId: string }) =>
       dataService.createRoute(portCityId, inlandCityId),
     onSuccess: (route) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.routes(route.portCityId) })
@@ -87,7 +87,7 @@ export const useCreateRouteMutation = () => {
 export const useVendorStatusMutation = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ vendorId, status }: { vendorId: string; status: VendorStatus }) =>
+    mutationFn: async ({ vendorId, status }: { vendorId: string; status: VendorStatus }) =>
       dataService.updateVendorStatus(vendorId, status),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.vendors })
@@ -98,7 +98,7 @@ export const useVendorStatusMutation = () => {
 export const useDeleteVendorMutation = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (vendorId: string) => dataService.deleteVendor(vendorId),
+    mutationFn: async (vendorId: string) => dataService.deleteVendor(vendorId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.vendors })
     },

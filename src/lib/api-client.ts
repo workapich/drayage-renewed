@@ -1,3 +1,4 @@
+import i18n from 'i18next'
 import { storage } from '@/lib/storage'
 import type { Account, AuthResponse, User, Vendor } from '@/types'
 
@@ -70,10 +71,10 @@ const buildUserFromAccount = (account: Account): User => ({
 const ensureVendorAccountActive = (account: Account, vendor: Vendor | undefined) => {
   if (account.role === 'vendor') {
     if (account.status === 'blocked' || vendor?.status === 'blocked') {
-      throw new Error('Your account has been blocked. Please contact support.')
+      throw new Error(i18n.t('auth.errors.accountBlocked'))
     }
     if (vendor?.status === 'inactive') {
-      throw new Error('Your vendor profile is inactive.')
+      throw new Error(i18n.t('auth.errors.vendorInactive'))
     }
   }
 }
@@ -85,7 +86,7 @@ export const api = {
 
     const account = storage.findAccountByEmail(email)
     if (!account || account.password !== password) {
-      throw new Error('Invalid credentials')
+      throw new Error(i18n.t('auth.errors.invalidCredentials'))
     }
 
     const vendor = account.vendorId ? storage.getVendorById(account.vendorId) : undefined
@@ -109,23 +110,23 @@ export const api = {
     await delay(400)
     const existing = storage.findAccountByEmail(email)
     if (existing) {
-      throw new Error('An account with this email already exists.')
+      throw new Error(i18n.t('auth.errors.emailExists'))
     }
 
     storage.addPendingRegistration({ email, mcid, password })
-    return { message: 'Registration successful. Please enter the 6-digit confirmation code.' }
+    return { message: i18n.t('auth.errors.registrationSuccess') }
   },
 
   async confirmEmail(email: string, code: string): Promise<User> {
     await delay(400)
 
     if (!/^[0-9]{6}$/.test(code)) {
-      throw new Error('Invalid confirmation code')
+      throw new Error(i18n.t('auth.errors.invalidConfirmationCode'))
     }
 
     const pending = storage.consumePendingRegistration(email)
     if (!pending) {
-      throw new Error('No pending registration found for this email.')
+      throw new Error(i18n.t('auth.errors.noPendingRegistration'))
     }
 
     const vendorId = crypto.randomUUID?.() ?? `vendor-${Date.now()}`
@@ -158,7 +159,7 @@ export const api = {
     await delay(200)
 
     if (!refreshToken) {
-      throw new Error('No refresh token available')
+      throw new Error(i18n.t('auth.errors.noRefreshToken'))
     }
 
     const newAccessToken = createToken('access')
@@ -186,32 +187,28 @@ export const fetchWithAuth = async (
     headers.set('Authorization', `Bearer ${token}`)
   }
 
-  try {
-    const response = await fetch(`${API_BASE_URL}${url}`, {
-      ...options,
-      headers,
-    })
+  const response = await fetch(`${API_BASE_URL}${url}`, {
+    ...options,
+    headers,
+  })
 
-    if (response.status === 401) {
-      // Try to refresh token
-      try {
-        const { accessToken: newToken } = await api.refreshAccessToken()
-        headers.set('Authorization', `Bearer ${newToken}`)
-        return fetch(`${API_BASE_URL}${url}`, {
-          ...options,
-          headers,
-        })
-      } catch {
-        // Refresh failed, clear tokens
-        setAccessToken(null)
-        setRefreshToken(null)
-        throw new Error('Authentication failed')
-      }
+  if (response.status === 401) {
+    // Try to refresh token
+    try {
+      const { accessToken: newToken } = await api.refreshAccessToken()
+      headers.set('Authorization', `Bearer ${newToken}`)
+      return fetch(`${API_BASE_URL}${url}`, {
+        ...options,
+        headers,
+      })
+    } catch {
+      // Refresh failed, clear tokens
+      setAccessToken(null)
+      setRefreshToken(null)
+      throw new Error(i18n.t('auth.errors.authenticationFailed'))
     }
-
-    return response
-  } catch (error) {
-    throw error
   }
+
+  return response
 }
 

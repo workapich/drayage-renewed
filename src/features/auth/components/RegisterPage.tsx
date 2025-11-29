@@ -1,13 +1,15 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Hash, Mail, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from '../hooks/useAuth'
 
 export const RegisterPage = () => {
+  const { t } = useTranslation()
   const [mcid, setMcid] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -25,7 +27,7 @@ export const RegisterPage = () => {
       await register(mcid.trim(), email.trim().toLowerCase(), password)
       navigate('/confirm-email', { state: { email: email.trim().toLowerCase() } })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed. Please try again.')
+      setError(err instanceof Error ? err.message : t('auth.register.error'))
     } finally {
       setIsLoading(false)
     }
@@ -46,12 +48,12 @@ export const RegisterPage = () => {
             </svg>
           </div>
           <div>
-            <p className="text-lg font-semibold text-slate-900">Drayage Bid Portal</p>
-            <p className="text-sm text-slate-500">Create a vendor account</p>
+            <p className="text-lg font-semibold text-slate-900">{t('common.appName')}</p>
+            <p className="text-sm text-slate-500">{t('auth.register.tagline')}</p>
           </div>
         </div>
         <Button variant="ghost" className="text-sm font-semibold text-slate-600" onClick={() => navigate('/login')}>
-          Back to Login
+          {t('auth.login.backToLogin')}
         </Button>
       </div>
 
@@ -69,9 +71,9 @@ export const RegisterPage = () => {
                   />
                 </svg>
               </div>
-              <CardTitle className="text-2xl font-semibold text-slate-900">Create Account</CardTitle>
+              <CardTitle className="text-2xl font-semibold text-slate-900">{t('auth.register.title')}</CardTitle>
               <CardDescription className="text-base">
-                Enter your company MCID, contact email, and password.
+                {t('auth.register.description')}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -84,14 +86,14 @@ export const RegisterPage = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="mcid" className="text-sm font-medium text-slate-700">
-                    MCID
+                    {t('auth.register.mcid')}
                   </Label>
                   <div className="relative">
                     <Hash className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                     <Input
                       id="mcid"
                       type="text"
-                      placeholder="MC-123456"
+                      placeholder={t('auth.register.mcidPlaceholder')}
                       value={mcid}
                       onChange={(e) => setMcid(e.target.value.toUpperCase())}
                       className="h-12 border-slate-200 pl-10 text-base uppercase tracking-wider"
@@ -102,14 +104,14 @@ export const RegisterPage = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-sm font-medium text-slate-700">
-                    Email
+                    {t('auth.register.email')}
                   </Label>
                   <div className="relative">
                     <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                     <Input
                       id="email"
                       type="email"
-                      placeholder="name@company.com"
+                      placeholder={t('auth.register.emailPlaceholder')}
                       value={email}
                       autoComplete="email"
                       onChange={(e) => setEmail(e.target.value)}
@@ -121,14 +123,14 @@ export const RegisterPage = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="password" className="text-sm font-medium text-slate-700">
-                    Password
+                    {t('auth.register.password')}
                   </Label>
                   <div className="relative">
                     <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                     <Input
                       id="password"
                       type="password"
-                      placeholder="Enter a strong password"
+                      placeholder={t('auth.register.passwordPlaceholder')}
                       value={password}
                       autoComplete="new-password"
                       minLength={6}
@@ -137,11 +139,11 @@ export const RegisterPage = () => {
                       required
                     />
                   </div>
-                  <p className="text-xs text-slate-500">Use at least 6 characters.</p>
+                  <p className="text-xs text-slate-500">{t('auth.register.passwordHint')}</p>
                 </div>
 
                 <Button type="submit" className="mt-2 h-12 w-full text-base font-semibold" disabled={isLoading}>
-                  {isLoading ? 'Registering...' : 'Register'}
+                  {isLoading ? t('auth.register.buttonLoading') : t('auth.register.button')}
                 </Button>
 
                 <Button
@@ -150,13 +152,13 @@ export const RegisterPage = () => {
                   className="h-12 w-full border-slate-200 text-base font-semibold"
                   onClick={() => navigate('/login')}
                 >
-                  Back to Login
+                  {t('auth.login.backToLogin')}
                 </Button>
               </form>
             </CardContent>
           </Card>
           <p className="mt-8 text-center text-xs uppercase tracking-wider text-slate-400">
-            © 2025 Drayage Services. All rights reserved.
+            {t('common.copyright')}
           </p>
         </div>
       </main>

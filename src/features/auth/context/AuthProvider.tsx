@@ -1,19 +1,9 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-import { User } from '@/types'
+import { useState, useEffect } from 'react'
+import type { ReactNode } from 'react'
+import type { User } from '@/types'
 import { api, setAccessToken, setRefreshToken, getAccessToken, getRefreshToken } from '@/lib/api-client'
 import { getCurrentUser, refreshTokenIfNeeded } from '@/lib/auth'
-
-interface AuthContextType {
-  user: User | null
-  isAuthenticated: boolean
-  isLoading: boolean
-  login: (email: string, password: string) => Promise<User>
-  register: (mcid: string, email: string, password: string) => Promise<void>
-  confirmEmail: (email: string, code: string) => Promise<User>
-  logout: () => Promise<void>
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+import { AuthContext } from './AuthContext'
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null)
@@ -78,13 +68,5 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       {children}
     </AuthContext.Provider>
   )
-}
-
-export const useAuth = () => {
-  const context = useContext(AuthContext)
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider')
-  }
-  return context
 }
 
