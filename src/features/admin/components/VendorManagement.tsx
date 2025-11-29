@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Ban, Trash2 } from 'lucide-react'
+import { Ban, Trash2, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Table,
@@ -91,7 +91,11 @@ export const VendorManagement = () => {
                         onClick={() => toggleBlockStatus(vendor.id, vendor.status)}
                         disabled={statusMutation.isPending}
                       >
-                        <Ban className="h-4 w-4" />
+                        {vendor.status === 'blocked' ? (
+                          <CheckCircle2 className="h-4 w-4" />
+                        ) : (
+                          <Ban className="h-4 w-4" />
+                        )}
                       </button>
                       <button
                         className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 hover:bg-slate-50"

@@ -36,7 +36,6 @@ export const BidSubmissionPage = () => {
   const [baseRate, setBaseRate] = useState('')
   const [fsc, setFsc] = useState('')
   const [accessorials, setAccessorials] = useState<Record<string, string>>(emptyAccessorials)
-  const [statusMessage, setStatusMessage] = useState('')
   const submitBidMutation = useSubmitBidMutation()
 
   const portCity = portCityId ? getCityById(portCityId) : null
@@ -69,6 +68,7 @@ export const BidSubmissionPage = () => {
     }
   }, [vendorBid])
 
+
   const routeStatus = useMemo(() => {
     return routes.reduce<Record<string, 'submitted' | 'pending' | 'new'>>((acc, route) => {
       const bid = portBids.find((item) => item.vendorId === user?.vendorId && item.routeId === route.id)
@@ -78,6 +78,11 @@ export const BidSubmissionPage = () => {
       return acc
     }, {})
   }, [portBids, routes, user?.vendorId])
+
+  const hasSubmittedBid = selectedRouteId ? routeStatus[selectedRouteId] === 'submitted' : false
+  const submittedBidMessage = hasSubmittedBid && selectedRoute
+    ? t('vendor.bid.ratesSaved', { city: selectedRoute.inlandCity.name, state: selectedRoute.inlandCity.state })
+    : null
 
   if (!portCity || !portCityId) {
     return (
@@ -127,7 +132,6 @@ export const BidSubmissionPage = () => {
         prepull: numericAccessorials.prepull || 0,
       },
     })
-    setStatusMessage(t('vendor.bid.ratesSaved', { city: selectedRoute.inlandCity.name, state: selectedRoute.inlandCity.state }))
   }
 
   const resetAccessorials = () => setAccessorials(emptyAccessorials)
@@ -147,9 +151,6 @@ export const BidSubmissionPage = () => {
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">{t('vendor.bid.selectDestination')}</p>
             <p className="mt-1 text-lg font-semibold text-slate-900">{t('vendor.bid.inlandRoutes', { city: portCity.name })}</p>
           </div>
-          <button className="mx-6 mt-5 flex h-12 items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-200 bg-slate-50 text-sm font-semibold text-slate-500 hover:border-blue-300 hover:text-blue-600">
-            {t('vendor.bid.addDestination')}
-          </button>
           <div className="mt-4 max-h-[620px] space-y-3 overflow-y-auto px-4 pb-6">
             {routes.length === 0 && (
               <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-16 text-center text-sm font-medium text-slate-500">
@@ -201,9 +202,9 @@ export const BidSubmissionPage = () => {
                 <p className="text-2xl font-semibold text-slate-900">{portCity.name.toUpperCase()}</p>
               </div>
             </div>
-            {statusMessage && (
+            {submittedBidMessage && (
               <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700">
-                {statusMessage}
+                {submittedBidMessage}
               </div>
             )}
           </div>
@@ -250,7 +251,7 @@ export const BidSubmissionPage = () => {
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs font-semibold text-slate-500">{t('vendor.bid.total')}</Label>
-                  <div className="h-12 rounded-2xl border border-slate-100 bg-slate-50 px-4 text-lg font-semibold text-slate-900">
+                  <div className="flex h-12 items-center rounded-2xl border border-slate-100 bg-slate-50 px-4 text-lg font-semibold text-slate-900">
                     {total > 0 ? formatCurrency(total) : '$0.00'}
                   </div>
                 </div>
@@ -274,7 +275,7 @@ export const BidSubmissionPage = () => {
                 {Object.entries(accessorials).map(([key, value]) => (
                   <div key={key} className="space-y-2">
                     <Label className="text-xs font-semibold text-slate-500">
-                      {key.replace(/([A-Z])/g, ' $1').trim()}
+                      {t(`vendor.bid.accessorialLabels.${key}`)}
                     </Label>
                     <div className="relative">
                       <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">

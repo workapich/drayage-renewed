@@ -77,7 +77,6 @@
       "portNotFound": "Port location not found.",
       "selectDestination": "Select Destination",
       "inlandRoutes": "{{city}} Inland Routes",
-      "addDestination": "+ Add a New Destination",
       "noDestinations": "No inland destinations available for this port yet.",
       "ratesSubmitted": "Rates submitted",
       "portLocation": "Port Location",
@@ -89,7 +88,17 @@
       "accessorials": "Accessorials",
       "reset": "Reset",
       "submitButton": "Submit Bid",
-      "submitButtonLoading": "Submitting…"
+      "submitButtonLoading": "Submitting…",
+      "accessorialLabels": {
+        "chassis": "Chassis",
+        "yardStorage": "Yard Storage",
+        "hazmat": "Hazmat",
+        "bond": "Bond",
+        "split": "Split",
+        "flip": "Flip",
+        "overweight": "Overweight",
+        "prepull": "Prepull"
+      }
     }
   },
   "admin": {

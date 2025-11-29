@@ -169,7 +169,7 @@ export const RateManagement = () => {
                   <TableHead>
                     <button
                       onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-                      className="flex items-center gap-1 text-slate-500 hover:text-slate-800"
+                      className="flex items-center gap-1 text-xs uppercase tracking-wide text-slate-500 hover:text-slate-800"
                     >
                       {t('admin.rates.table.submitted')}
                       <ChevronDown className={`h-4 w-4 transition ${sortOrder === 'asc' ? 'rotate-180' : ''}`} />
