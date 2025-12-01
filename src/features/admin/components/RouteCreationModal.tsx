@@ -80,36 +80,32 @@ export const RouteCreationModal = ({ open, onOpenChange, defaultPortId }: RouteC
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <label htmlFor="starting-city" className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
-              {t('admin.routeCreation.startingCity')}
-            </label>
-            <Combobox
-              options={portCityOptions}
-              value={startingCity}
-              onChange={setStartingCity}
-              placeholder={t('admin.routeCreation.startingCityPlaceholder')}
-              className="h-12 rounded-2xl border-slate-200"
-            />
-          </div>
+          {!defaultPortId && (
+            <div className="space-y-2">
+              <label htmlFor="starting-city" className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
+                {t('admin.routeCreation.startingCity')}
+              </label>
+              <Combobox
+                options={portCityOptions}
+                value={startingCity}
+                onChange={setStartingCity}
+                placeholder={t('admin.routeCreation.startingCityPlaceholder')}
+                className="h-12 rounded-2xl border-slate-200"
+              />
+            </div>
+          )}
 
           <div className="space-y-2">
             <label htmlFor="ending-city" className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
               {t('admin.routeCreation.endingCity')}
             </label>
-            {startingCity ? (
-              <Combobox
-                options={inlandCityOptions}
-                value={endingCity}
-                onChange={setEndingCity}
-                placeholder={t('admin.routeCreation.endingCityPlaceholder')}
-                className="h-12 rounded-2xl border-slate-200"
-              />
-            ) : (
-              <div className="h-12 rounded-2xl border border-slate-200 bg-slate-50 flex items-center px-3 text-sm text-slate-400">
-                {t('admin.routeCreation.endingCityPlaceholder')}
-              </div>
-            )}
+            <Combobox
+              options={inlandCityOptions}
+              value={endingCity}
+              onChange={setEndingCity}
+              placeholder={t('admin.routeCreation.endingCityPlaceholder')}
+              className="h-12 rounded-2xl border-slate-200"
+            />
           </div>
 
           {feedback && (
