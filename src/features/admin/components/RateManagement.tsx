@@ -15,7 +15,7 @@ import {
 import { Layout } from '@/components/Layout'
 import { getCityById } from '@/lib/mock-data'
 import { RouteCreationModal } from './RouteCreationModal'
-import { useBidsByRouteQuery, useRoutesQuery } from '@/lib/query-hooks'
+import { useBidsByPortQuery, useBidsByRouteQuery, useRoutesQuery } from '@/lib/query-hooks'
 
 export const RateManagement = () => {
   const { t } = useTranslation()
@@ -25,6 +25,7 @@ export const RateManagement = () => {
   const [isRouteModalOpen, setIsRouteModalOpen] = useState(false)
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const { data: routes = [] } = useRoutesQuery(portCityId)
+  const { data: allPortBids = [] } = useBidsByPortQuery(portCityId ?? '')
   const { data: bids = [] } = useBidsByRouteQuery(selectedDestinationId ?? '')
 
   const portCity = portCityId ? getCityById(portCityId) : null
@@ -113,7 +114,7 @@ export const RateManagement = () => {
               </div>
             )}
             {routes.map((route) => {
-              const count = bids.filter((bid) => bid.routeId === route.id).length
+              const count = allPortBids.filter((bid) => bid.routeId === route.id).length
               const isSelected = route.id === selectedDestinationId
               return (
                 <button
