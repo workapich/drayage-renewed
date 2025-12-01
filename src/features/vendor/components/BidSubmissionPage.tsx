@@ -176,9 +176,6 @@ export const BidSubmissionPage = () => {
                   <p className="text-base font-semibold">
                     {route.inlandCity.name}, {route.inlandCity.state}
                   </p>
-                  <p className={`text-sm ${isSelected ? 'text-white/80' : 'text-slate-500'}`}>
-                    {route.inlandCityId.toUpperCase()}
-                  </p>
                   {status === 'submitted' && !isSelected && (
                     <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-emerald-600">
                       <Check className="h-3 w-3" />
