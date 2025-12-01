@@ -13,7 +13,7 @@ A modern web application for managing drayage bids, built with React 19, TypeScr
 - **Dashboard**: View statistics and manage bids across all cities
 - **Vendor Management**: Manage vendor accounts, whitelist emails
 - **Route Management**: Create and manage shipping routes
-- **Rate Management**: View and analyze vendor bids by city and destination
+- **Rate Management**: View and analyze vendor bids by port/ramp region and inland location
 
 ## Tech Stack
 

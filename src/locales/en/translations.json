@@ -65,19 +65,19 @@
     "cities": {
       "title": "Vendor Portal",
       "pageTitle": "Submit Your Bid",
-      "description": "Select the starting city to view inland destinations and submit rates.",
+      "description": "Select the port/ramp region to view inland locations and submit rates.",
       "step1Title": "Choose Port Location",
       "step1Description": "Select where the load starts",
-      "step2Title": "Choose Destination & Input Rates",
+      "step2Title": "Choose Inland Location & Input Rates",
       "step2Description": "Complete inland routing",
       "searchPlaceholder": "Search for a city..."
     },
     "bid": {
       "backToCities": "Back to Cities",
       "portNotFound": "Port location not found.",
-      "selectDestination": "Select Destination",
+      "selectDestination": "Select Inland Location",
       "inlandRoutes": "{{city}} Inland Routes",
-      "noDestinations": "No inland destinations available for this port yet.",
+      "noDestinations": "No inland locations available for this port yet.",
       "ratesSubmitted": "Rates submitted",
       "portLocation": "Port Location",
       "ratesSaved": "Rates saved for {{city}}, {{state}}",
@@ -123,7 +123,7 @@
       },
       "activeRoutes": {
         "title": "Active Routes",
-        "description": "Available destinations currently receiving bids"
+        "description": "Available inland locations currently receiving bids"
       },
       "viewRates": {
         "label": "Select City",
@@ -156,9 +156,9 @@
       "title": "Rate Management",
       "backToCities": "Back to Cities",
       "cityNotFound": "City not found.",
-      "selectDestination": "Select Destination",
+      "selectDestination": "Select Inland Location",
       "addButton": "+ Add",
-      "noDestinations": "No inland destinations yet.",
+      "noDestinations": "No inland locations yet.",
       "ratesCount": "{{count}} rates",
       "viewingRates": "Viewing Rates For",
       "routeTitle": "{{port}} → {{destination}}",
@@ -166,13 +166,13 @@
       "table": {
         "vendorId": "Vendor ID",
         "email": "Email",
-        "destination": "Destination",
+        "destination": "Inland Location",
         "submitted": "Submitted",
         "baseRate": "Base Rate",
         "fsc": "FSC %",
         "total": "Total"
       },
-      "noBids": "No bids found for this destination."
+      "noBids": "No bids found for this inland location."
     },
     "addVendor": {
       "title": "Add New Vendor(s)",
@@ -187,10 +187,10 @@
     },
     "routeCreation": {
       "title": "Create New Route",
-      "startingCity": "Starting City",
-      "startingCityPlaceholder": "Select port city",
-      "endingCity": "Ending City",
-      "endingCityPlaceholder": "Select inland city",
+      "startingCity": "Port/Ramp Region",
+      "startingCityPlaceholder": "Select port/ramp region",
+      "endingCity": "Inland Location",
+      "endingCityPlaceholder": "Select inland location",
       "createButton": "Create Route",
       "createButtonLoading": "Creating...",
       "success": "Route created successfully.",
