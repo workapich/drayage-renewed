@@ -71,4 +71,17 @@ alwaysApply: true
 - Do not commit `node_modules`, local artifacts, secrets, or build output.
 - Respect `.gitignore` settings.
 
+/* ACCESSIBILITY (AX) RULES */
+- All interactive UI components (buttons, inputs, links, dialogs, etc.) must have appropriate accessible labels (aria-label, aria-labelledby, or visible text).
+- Use semantic HTML elements wherever possible (e.g., <button>, <nav>, <section>, <main>, <form>).
+- Ensure proper keyboard navigation: all interactive elements must be fully operable via keyboard (tab/enter/space/arrow keys as appropriate).
+- Use roles, states, and properties (ARIA) only where semantics cannot be conveyed using native HTML.
+- Provide visible focus indicators for all focusable elements; do not remove outlines unless replaced with accessible equivalents.
+- All images must include meaningful alt text (alt attribute); decorative images should use alt=""
+- Forms must include associated <label> elements for all inputs. If a visible label is not possible, use aria-label or aria-labelledby.
+- Ensure a logical heading structure (<h1>–<h6>) for all screens, and accurately describe page structure with landmarks.
+- Avoid color as the sole means of conveying information. Ensure sufficient color contrast according to WCAG AA standards.
+- Announce dynamic content updates to screen readers using appropriate ARIA live regions, if relevant.
+- Test using screen readers (NVDA, VoiceOver, JAWS) and keyboard navigation for critical flows.
+
 

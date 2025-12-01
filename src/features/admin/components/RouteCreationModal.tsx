@@ -8,13 +8,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { Combobox } from '@/components/ui/combobox'
 import { getPortCities, cities } from '@/lib/mock-data'
 import { useCreateRouteMutation } from '@/lib/query-hooks'
 
@@ -32,6 +26,16 @@ export const RouteCreationModal = ({ open, onOpenChange, defaultPortId }: RouteC
   const portCities = getPortCities()
   const availableInlandCities = cities.filter((c) => c.isInland)
   const createRouteMutation = useCreateRouteMutation()
+
+  const portCityOptions = portCities.map((city) => ({
+    value: city.id,
+    label: `${city.name}, ${city.state ?? ''}`.trim(),
+  }))
+
+  const inlandCityOptions = availableInlandCities.map((city) => ({
+    value: city.id,
+    label: `${city.name}, ${city.state ?? ''}`.trim(),
+  }))
 
   useEffect(() => {
     if (defaultPortId) {
@@ -77,35 +81,35 @@ export const RouteCreationModal = ({ open, onOpenChange, defaultPortId }: RouteC
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">{t('admin.routeCreation.startingCity')}</p>
-            <Select value={startingCity} onValueChange={setStartingCity}>
-              <SelectTrigger className="h-12 rounded-2xl border-slate-200">
-                <SelectValue placeholder={t('admin.routeCreation.startingCityPlaceholder')} />
-              </SelectTrigger>
-              <SelectContent>
-                {portCities.map((city) => (
-                  <SelectItem key={city.id} value={city.id}>
-                    {city.name}, {city.state}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <label htmlFor="starting-city" className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
+              {t('admin.routeCreation.startingCity')}
+            </label>
+            <Combobox
+              options={portCityOptions}
+              value={startingCity}
+              onChange={setStartingCity}
+              placeholder={t('admin.routeCreation.startingCityPlaceholder')}
+              className="h-12 rounded-2xl border-slate-200"
+            />
           </div>
 
           <div className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">{t('admin.routeCreation.endingCity')}</p>
-            <Select value={endingCity} onValueChange={setEndingCity} disabled={!startingCity}>
-              <SelectTrigger className="h-12 rounded-2xl border-slate-200">
-                <SelectValue placeholder={t('admin.routeCreation.endingCityPlaceholder')} />
-              </SelectTrigger>
-              <SelectContent>
-                {availableInlandCities.map((city) => (
-                  <SelectItem key={city.id} value={city.id}>
-                    {city.name}, {city.state}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <label htmlFor="ending-city" className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
+              {t('admin.routeCreation.endingCity')}
+            </label>
+            {startingCity ? (
+              <Combobox
+                options={inlandCityOptions}
+                value={endingCity}
+                onChange={setEndingCity}
+                placeholder={t('admin.routeCreation.endingCityPlaceholder')}
+                className="h-12 rounded-2xl border-slate-200"
+              />
+            ) : (
+              <div className="h-12 rounded-2xl border border-slate-200 bg-slate-50 flex items-center px-3 text-sm text-slate-400">
+                {t('admin.routeCreation.endingCityPlaceholder')}
+              </div>
+            )}
           </div>
 
           {feedback && (
