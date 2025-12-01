@@ -1,5 +1,5 @@
 import { bids as seedBids, routes as seedRoutes, vendors as seedVendors, statistics as seedStats } from '@/lib/mock-data'
-import type { Account, Bid, Route, Statistics, Vendor, VendorStatus } from '@/types'
+import type { Account, AccessorialTemplate, Bid, Route, Statistics, Vendor, VendorStatus } from '@/types'
 
 const STORAGE_KEY = 'drayage-db'
 
@@ -16,6 +16,7 @@ type Database = {
   statistics: Statistics
   accounts: Account[]
   pendingRegistrations: PendingRegistration[]
+  templates: AccessorialTemplate[]
 }
 
 const seedAccounts: Account[] = [
@@ -45,6 +46,7 @@ const createSeedDatabase = (): Database => ({
   statistics: clone(seedStats),
   accounts: clone(seedAccounts),
   pendingRegistrations: [],
+  templates: [],
 })
 
 const readDatabase = (): Database => {
@@ -228,6 +230,31 @@ export const storage = {
       }
     })
     return counts
+  },
+  getTemplates(vendorId: string): AccessorialTemplate[] {
+    if (!vendorId) return []
+    return readDatabase().templates.filter((template) => template.vendorId === vendorId)
+  },
+  getTemplateById(vendorId: string, templateId: string): AccessorialTemplate | null {
+    if (!vendorId || !templateId) return null
+    return readDatabase().templates.find((t) => t.id === templateId && t.vendorId === vendorId) ?? null
+  },
+  saveTemplate(template: AccessorialTemplate): AccessorialTemplate {
+    return mutateDb((db) => {
+      const existing = db.templates.find((t) => t.id === template.id)
+      if (existing) {
+        const index = db.templates.indexOf(existing)
+        db.templates[index] = template
+      } else {
+        db.templates.push(template)
+      }
+      return template
+    })
+  },
+  deleteTemplate(vendorId: string, templateId: string): void {
+    mutateDb((db) => {
+      db.templates = db.templates.filter((t) => !(t.id === templateId && t.vendorId === vendorId))
+    })
   },
 }
 

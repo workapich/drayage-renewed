@@ -1,14 +1,37 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Check, MapPin, RefreshCw } from 'lucide-react'
+import { Check, FileText, MapPin, RefreshCw, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Layout } from '@/components/Layout'
 import { getCityById } from '@/lib/mock-data'
 import { useAuth } from '@/features/auth/hooks/useAuth'
-import { useBidsByPortQuery, useBidsByRouteQuery, useRoutesQuery, useSubmitBidMutation } from '@/lib/query-hooks'
+import {
+  useBidsByPortQuery,
+  useBidsByRouteQuery,
+  useRoutesQuery,
+  useSubmitBidMutation,
+  useTemplatesQuery,
+  useSaveTemplateMutation,
+  useDeleteTemplateMutation,
+} from '@/lib/query-hooks'
 
 const emptyAccessorials = {
   chassis: '',
@@ -36,7 +59,14 @@ export const BidSubmissionPage = () => {
   const [baseRate, setBaseRate] = useState('')
   const [fsc, setFsc] = useState('')
   const [accessorials, setAccessorials] = useState<Record<string, string>>(emptyAccessorials)
+  const [isSaveTemplateDialogOpen, setIsSaveTemplateDialogOpen] = useState(false)
+  const [templateName, setTemplateName] = useState('')
+  const [pendingSubmit, setPendingSubmit] = useState(false)
+  const [templateError, setTemplateError] = useState<string | null>(null)
   const submitBidMutation = useSubmitBidMutation()
+  const { data: templates = [] } = useTemplatesQuery(user?.vendorId)
+  const saveTemplateMutation = useSaveTemplateMutation()
+  const deleteTemplateMutation = useDeleteTemplateMutation()
 
   const portCity = portCityId ? getCityById(portCityId) : null
 
@@ -84,16 +114,6 @@ export const BidSubmissionPage = () => {
     ? t('vendor.bid.ratesSaved', { city: selectedRoute.inlandCity.name, state: selectedRoute.inlandCity.state })
     : null
 
-  if (!portCity || !portCityId) {
-    return (
-      <Layout showBackButton backTo="/vendor/cities" backLabel={t('vendor.bid.backToCities')} showLogout fullWidth>
-        <div className="rounded-3xl border border-white/70 bg-white/90 p-8 text-center text-lg font-semibold text-slate-700 shadow-[0_40px_80px_rgba(15,23,42,0.1)]">
-          {t('vendor.bid.portNotFound')}
-        </div>
-      </Layout>
-    )
-  }
-
   const numericBaseRate = parseNumeric(baseRate)
   const numericFsc = parseNumeric(fsc)
   const numericAccessorials = Object.entries(accessorials).reduce<Record<string, number>>(
@@ -104,6 +124,36 @@ export const BidSubmissionPage = () => {
     {},
   )
 
+  const accessorialsChanged = useMemo(() => {
+    if (!vendorBid) return false
+    const submittedAccessorials = vendorBid.accessorials
+    return Object.keys(emptyAccessorials).some((key) => {
+      const current = numericAccessorials[key] || 0
+      const submitted = submittedAccessorials[key as keyof typeof submittedAccessorials] || 0
+      return Math.abs(current - submitted) > 0.01 // Account for floating point precision
+    })
+  }, [vendorBid, numericAccessorials])
+
+  const matchesExistingTemplate = useMemo(() => {
+    return templates.some((template) => {
+      return Object.keys(emptyAccessorials).every((key) => {
+        const current = numericAccessorials[key] || 0
+        const templateValue = template.accessorials[key] || 0
+        return Math.abs(current - templateValue) < 0.01 // Account for floating point precision
+      })
+    })
+  }, [templates, numericAccessorials])
+
+  if (!portCity || !portCityId) {
+    return (
+      <Layout showBackButton backTo="/vendor/cities" backLabel={t('vendor.bid.backToCities')} showLogout fullWidth>
+        <div className="rounded-3xl border border-white/70 bg-white/90 p-8 text-center text-lg font-semibold text-slate-700 shadow-[0_40px_80px_rgba(15,23,42,0.1)]">
+          {t('vendor.bid.portNotFound')}
+        </div>
+      </Layout>
+    )
+  }
+
   const accessorialTotal = Object.values(numericAccessorials).reduce((sum, value) => sum + value, 0)
   const total = numericBaseRate + numericBaseRate * (numericFsc / 100) + accessorialTotal
   const canSubmit = Boolean(selectedRoute && user?.vendorId && numericBaseRate > 0 && numericFsc >= 0)
@@ -111,7 +161,54 @@ export const BidSubmissionPage = () => {
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value || 0)
 
-  const handleSubmit = async () => {
+  const handleLoadTemplate = (templateId: string) => {
+    const template = templates.find((t) => t.id === templateId)
+    if (template) {
+      const accessorialsAsStrings = Object.entries(template.accessorials).reduce<Record<string, string>>(
+        (acc, [key, value]) => {
+          acc[key] = value > 0 ? value.toString() : ''
+          return acc
+        },
+        {},
+      )
+      setAccessorials(accessorialsAsStrings)
+    }
+  }
+
+  const handleSaveTemplate = async () => {
+    if (!user?.vendorId || !templateName.trim()) return
+
+    setTemplateError(null)
+    try {
+      await saveTemplateMutation.mutateAsync({
+        vendorId: user.vendorId,
+        name: templateName.trim(),
+        accessorials: numericAccessorials,
+      })
+      setTemplateName('')
+      setTemplateError(null)
+      setIsSaveTemplateDialogOpen(false)
+
+      if (pendingSubmit) {
+        setPendingSubmit(false)
+        performSubmit()
+      }
+    } catch (error) {
+      setTemplateError(error instanceof Error ? error.message : 'Failed to save template')
+      console.error('Failed to save template:', error)
+    }
+  }
+
+  const handleDeleteTemplate = async (templateId: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!user?.vendorId) return
+    await deleteTemplateMutation.mutateAsync({
+      vendorId: user.vendorId,
+      templateId,
+    })
+  }
+
+  const performSubmit = async () => {
     if (!selectedRoute || !user?.vendorId || !canSubmit) return
     await submitBidMutation.mutateAsync({
       vendorId: user.vendorId,
@@ -132,6 +229,41 @@ export const BidSubmissionPage = () => {
         prepull: numericAccessorials.prepull || 0,
       },
     })
+  }
+
+  const handleSubmit = async () => {
+    if (!selectedRoute || !user?.vendorId || !canSubmit) return
+
+    // If accessorials match an existing template, submit directly
+    if (matchesExistingTemplate) {
+      await performSubmit()
+      return
+    }
+
+    // Prompt to save template if:
+    // 1. No templates exist, OR
+    // 2. Accessorials have changed from the submitted bid
+    if (templates.length === 0 || (hasSubmittedBid && accessorialsChanged)) {
+      setPendingSubmit(true)
+      setIsSaveTemplateDialogOpen(true)
+      return
+    }
+
+    await performSubmit()
+  }
+
+  const handleSaveTemplateDialogClose = async (shouldSave: boolean) => {
+    if (shouldSave && templateName.trim()) {
+      await handleSaveTemplate()
+    } else {
+      setIsSaveTemplateDialogOpen(false)
+      setTemplateName('')
+      setTemplateError(null)
+      if (pendingSubmit) {
+        setPendingSubmit(false)
+        performSubmit()
+      }
+    }
   }
 
   const resetAccessorials = () => setAccessorials(emptyAccessorials)
@@ -258,15 +390,55 @@ export const BidSubmissionPage = () => {
             <section>
               <div className="flex items-center justify-between">
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">{t('vendor.bid.accessorials')}</p>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="h-8 gap-2 text-xs font-semibold text-slate-500 hover:text-blue-600"
-                  onClick={resetAccessorials}
-                >
-                  <RefreshCw className="h-4 w-4" />
-                  {t('vendor.bid.reset')}
-                </Button>
+                <div className="flex items-center gap-2">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        className="h-8 gap-2 text-xs font-semibold text-slate-500 hover:text-blue-600"
+                      >
+                        <FileText className="h-4 w-4" />
+                        {t('vendor.bid.template')}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56">
+                      {templates.length === 0 ? (
+                        <div className="px-2 py-1.5 text-sm text-slate-500">{t('vendor.bid.noTemplates')}</div>
+                      ) : (
+                        templates.map((template) => (
+                          <div key={template.id}>
+                            <DropdownMenuItem
+                              onClick={() => handleLoadTemplate(template.id)}
+                              className="flex items-center justify-between"
+                            >
+                              <span className="truncate">{template.name}</span>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 w-6 p-0 hover:bg-red-50 hover:text-red-600"
+                                onClick={(e) => handleDeleteTemplate(template.id, e)}
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </DropdownMenuItem>
+                            {template.id !== templates[templates.length - 1].id && <DropdownMenuSeparator />}
+                          </div>
+                        ))
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="h-8 gap-2 text-xs font-semibold text-slate-500 hover:text-blue-600"
+                    onClick={resetAccessorials}
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                    {t('vendor.bid.reset')}
+                  </Button>
+                </div>
               </div>
               <div className="mt-4 grid gap-4 md:grid-cols-4">
                 {Object.entries(accessorials).map(([key, value]) => (
@@ -310,6 +482,52 @@ export const BidSubmissionPage = () => {
           </div>
         </div>
       </div>
+
+      <Dialog open={isSaveTemplateDialogOpen} onOpenChange={(open) => !open && handleSaveTemplateDialogClose(false)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t('vendor.bid.saveTemplate')}</DialogTitle>
+            <DialogDescription>{t('vendor.bid.saveTemplatePrompt')}</DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Label htmlFor="template-name" className="text-xs font-semibold text-slate-500">
+              {t('vendor.bid.templateName')}
+            </Label>
+            <Input
+              id="template-name"
+              value={templateName}
+              onChange={(e) => {
+                setTemplateName(e.target.value)
+                setTemplateError(null)
+              }}
+              placeholder={t('vendor.bid.templateNamePlaceholder')}
+              className="mt-2 h-12 rounded-2xl border-slate-200"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && templateName.trim()) {
+                  handleSaveTemplateDialogClose(true)
+                }
+              }}
+            />
+            {templateError && (
+              <div className="mt-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700">
+                {templateError}
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => handleSaveTemplateDialogClose(false)}>
+              {t('vendor.bid.noSubmitOnly')}
+            </Button>
+            <Button
+              onClick={() => handleSaveTemplateDialogClose(true)}
+              disabled={!templateName.trim()}
+              className="rounded-2xl bg-[#1f62f7] px-6 text-white hover:bg-[#2352d6]"
+            >
+              {t('vendor.bid.yesSave')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Layout>
   )
 }

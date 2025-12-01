@@ -10,6 +10,7 @@ export const queryKeys = {
   bidsByRoute: (routeId: string) => ['bids', 'route', routeId] as const,
   statistics: ['statistics'] as const,
   vendorCounts: (vendorId: string) => ['vendor-counts', vendorId] as const,
+  templates: (vendorId: string) => ['templates', vendorId] as const,
 }
 
 export const useVendorsQuery = () =>
@@ -101,6 +102,54 @@ export const useDeleteVendorMutation = () => {
     mutationFn: async (vendorId: string) => dataService.deleteVendor(vendorId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.vendors })
+    },
+  })
+}
+
+export const useAddVendorMutation = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (email: string) => dataService.addVendor(email),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.vendors })
+    },
+  })
+}
+
+export const useTemplatesQuery = (vendorId?: string) =>
+  useQuery({
+    queryKey: queryKeys.templates(vendorId ?? 'unknown'),
+    queryFn: async () => (vendorId ? storage.getTemplates(vendorId) : []),
+    enabled: Boolean(vendorId),
+  })
+
+export const useSaveTemplateMutation = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({
+      vendorId,
+      name,
+      accessorials,
+    }: {
+      vendorId: string
+      name: string
+      accessorials: Record<string, number>
+    }) => dataService.saveTemplate(vendorId, name, accessorials),
+    onSuccess: (template) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.templates(template.vendorId) })
+    },
+  })
+}
+
+export const useDeleteTemplateMutation = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ vendorId, templateId }: { vendorId: string; templateId: string }) => {
+      dataService.deleteTemplate(vendorId, templateId)
+      return { vendorId, templateId }
+    },
+    onSuccess: ({ vendorId }) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.templates(vendorId) })
     },
   })
 }

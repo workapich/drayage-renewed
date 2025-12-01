@@ -89,3 +89,11 @@ export interface Account {
   status?: VendorStatus
 }
 
+export interface AccessorialTemplate {
+  id: string
+  name: string
+  vendorId: string
+  accessorials: Record<string, number>
+  createdAt: string
+}
+

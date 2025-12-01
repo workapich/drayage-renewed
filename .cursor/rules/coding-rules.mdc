@@ -45,6 +45,16 @@ alwaysApply: true
 - **When using mock data:** All CRUD/data logic resides in local utility functions with delay/promises for simulating network; no backend required.
 - **When using real API:** All CRUD/data logic must go via real API endpoints (with TanStack Query for fetching/mutations). Remove mock logic as endpoints are implemented.
 
+/* DATA ARCHITECTURE PATTERN */
+- **Three-Layer Architecture:** All data operations must follow this pattern:
+  1. **Storage Layer (`src/lib/storage.ts`):** Low-level storage operations. Directly reads/writes to localStorage. All data entities must be part of the main Database type. Methods are synchronous and return data directly.
+  2. **Service Layer (`src/lib/data-service.ts`):** Business logic layer. Uses storage layer, handles validation, transformations, calculations, and business rules. Methods may throw errors for validation failures.
+  3. **Query Layer (`src/lib/query-hooks.ts`):** TanStack Query hooks. Uses service layer (for mutations) or storage layer (for queries). Handles cache invalidation and async operations.
+- **Never bypass layers:** Components must use query hooks, never call storage or dataService directly.
+- **Single Database:** All data must be stored in the unified Database type in `storage.ts`. Do not create separate storage files for different entities.
+- **Query Keys:** All query keys must be defined in `queryKeys` object in `query-hooks.ts` using consistent naming patterns.
+- **Mutations:** All mutations must invalidate relevant query caches in their `onSuccess` callbacks.
+
 /* AUTHENTICATION & STORAGE */
 - Never store secrets or sensitive info on client.
 - Use `localStorage` for auth tokens via utility methods in `src/lib/api-client.ts`.

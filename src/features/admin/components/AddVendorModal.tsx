@@ -10,24 +10,21 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { storage } from '@/lib/storage'
-import { useQueryClient } from '@tanstack/react-query'
-import { queryKeys } from '@/lib/query-hooks'
+import { useVendorsQuery, useAddVendorMutation } from '@/lib/query-hooks'
 
 interface AddVendorModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
-const generateId = () => (crypto.randomUUID?.() ?? `v-${Date.now()}`)
-const generateMcid = () => `MC-${Math.floor(100000 + Math.random() * 900000)}`
 
 export const AddVendorModal = ({ open, onOpenChange }: AddVendorModalProps) => {
   const { t } = useTranslation()
   const [emails, setEmails] = useState<string[]>([])
   const [inputValue, setInputValue] = useState('')
   const [feedback, setFeedback] = useState<string | null>(null)
-  const queryClient = useQueryClient()
+  const { data: vendors = [] } = useVendorsQuery()
+  const addVendorMutation = useAddVendorMutation()
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' || e.key === ',') {
@@ -48,8 +45,8 @@ export const AddVendorModal = ({ open, onOpenChange }: AddVendorModalProps) => {
     setFeedback(t('admin.addVendor.csvNotAvailable'))
   }
 
-  const handleAdd = () => {
-    const existing = new Set(storage.getVendors().map((vendor) => vendor.email.toLowerCase()))
+  const handleAdd = async () => {
+    const existing = new Set(vendors.map((vendor) => vendor.email.toLowerCase()))
     const newEmails = emails.filter((email) => !existing.has(email))
 
     if (newEmails.length === 0) {
@@ -57,25 +54,18 @@ export const AddVendorModal = ({ open, onOpenChange }: AddVendorModalProps) => {
       return
     }
 
-    newEmails.forEach((email) => {
-      storage.upsertVendor({
-        id: generateId(),
-        mcid: generateMcid(),
-        email,
-        status: 'active',
-        totalBids: 0,
-        joinedDate: new Date().toLocaleDateString('en-US'),
-      })
-    })
-
-    queryClient.invalidateQueries({ queryKey: queryKeys.vendors })
-    setFeedback(t('admin.addVendor.vendorsAdded', { count: newEmails.length }))
-    setEmails([])
-    setInputValue('')
-    setTimeout(() => {
-      setFeedback(null)
-      onOpenChange(false)
-    }, 800)
+    try {
+      await Promise.all(newEmails.map((email) => addVendorMutation.mutateAsync(email)))
+      setFeedback(t('admin.addVendor.vendorsAdded', { count: newEmails.length }))
+      setEmails([])
+      setInputValue('')
+      setTimeout(() => {
+        setFeedback(null)
+        onOpenChange(false)
+      }, 800)
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : t('admin.addVendor.error'))
+    }
   }
 
   return (

@@ -1,6 +1,6 @@
 import { getCityById } from '@/lib/mock-data'
 import { storage } from '@/lib/storage'
-import type { AccessorialFees, Bid, Route, VendorStatus } from '@/types'
+import type { AccessorialFees, AccessorialTemplate, Bid, Route, Vendor, VendorStatus } from '@/types'
 
 const sumAccessorials = (fees: AccessorialFees) =>
   Object.values(fees).reduce((total, value) => total + (Number.isFinite(value) ? value : 0), 0)
@@ -78,6 +78,51 @@ export const dataService = {
 
   deleteVendor(vendorId: string) {
     return storage.deleteVendor(vendorId)
+  },
+
+  addVendor(email: string): Vendor {
+    const existing = storage.getVendors().find((v) => v.email.toLowerCase() === email.toLowerCase())
+    if (existing) {
+      throw new Error('Vendor with this email already exists')
+    }
+
+    const vendor: Vendor = {
+      id: crypto.randomUUID?.() ?? `v-${Date.now()}`,
+      mcid: `MC-${Math.floor(100000 + Math.random() * 900000)}`,
+      email,
+      status: 'active',
+      totalBids: 0,
+      joinedDate: new Date().toLocaleDateString('en-US'),
+    }
+
+    return storage.upsertVendor(vendor)
+  },
+
+  saveTemplate(vendorId: string, name: string, accessorials: Record<string, number>): AccessorialTemplate {
+    if (!vendorId) throw new Error('Vendor ID is required')
+    if (!name || name.trim() === '') throw new Error('Template name is required')
+
+    const templates = storage.getTemplates(vendorId)
+
+    // Check for duplicate names
+    const duplicate = templates.find((t) => t.name.toLowerCase().trim() === name.toLowerCase().trim())
+    if (duplicate) {
+      throw new Error('Template with this name already exists')
+    }
+
+    const template: AccessorialTemplate = {
+      id: `template-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      name: name.trim(),
+      vendorId,
+      accessorials,
+      createdAt: new Date().toISOString(),
+    }
+
+    return storage.saveTemplate(template)
+  },
+
+  deleteTemplate(vendorId: string, templateId: string): void {
+    storage.deleteTemplate(vendorId, templateId)
   },
 }
 
