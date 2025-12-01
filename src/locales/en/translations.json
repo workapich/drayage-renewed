@@ -70,7 +70,8 @@
       "step1Description": "Select where the load starts",
       "step2Title": "Choose Inland Location & Input Rates",
       "step2Description": "Complete inland routing",
-      "searchPlaceholder": "Search for a city..."
+      "searchPlaceholder": "Search for a city...",
+      "favorites": "Favorites"
     },
     "bid": {
       "backToCities": "Back to Cities",

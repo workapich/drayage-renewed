@@ -23,10 +23,39 @@ export const CitySelectionPage = () => {
     city.name.toLowerCase().includes(searchQuery.toLowerCase()),
   )
 
-  const sortedCities = useMemo(() => {
-    const favorites = filteredCities.filter((city) => favoriteCityIds.includes(city.id))
-    const nonFavorites = filteredCities.filter((city) => !favoriteCityIds.includes(city.id))
-    return [...favorites, ...nonFavorites]
+  const favorites = useMemo(() => {
+    return filteredCities
+      .filter((city) => favoriteCityIds.includes(city.id))
+      .sort((a, b) => a.name.localeCompare(b.name))
+  }, [filteredCities, favoriteCityIds])
+
+  const groupedCities = useMemo(() => {
+    // Group all cities (including favorites) by first letter
+    const cityGroups: Record<string, typeof filteredCities> = {}
+    filteredCities.forEach((city) => {
+      const firstLetter = city.name.charAt(0).toUpperCase()
+      if (!cityGroups[firstLetter]) {
+        cityGroups[firstLetter] = []
+      }
+      cityGroups[firstLetter].push(city)
+    })
+    
+    // Sort letters and return grouped cities
+    // Within each letter group, favorites appear first, then non-favorites
+    return Object.keys(cityGroups)
+      .sort()
+      .map((letter) => ({
+        letter,
+        cities: cityGroups[letter].sort((a, b) => {
+          const aIsFavorite = favoriteCityIds.includes(a.id)
+          const bIsFavorite = favoriteCityIds.includes(b.id)
+          // Favorites first
+          if (aIsFavorite && !bIsFavorite) return -1
+          if (!aIsFavorite && bIsFavorite) return 1
+          // Then alphabetically
+          return a.name.localeCompare(b.name)
+        }),
+      }))
   }, [filteredCities, favoriteCityIds])
 
   const handleToggleFavorite = (e: React.MouseEvent, cityId: string) => {
@@ -80,50 +109,101 @@ export const CitySelectionPage = () => {
           </div>
         </div>
 
-        <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-          {sortedCities.map((city) => {
-            const badgeCounts = vendorCounts[city.id] ?? { submitted: 0, pending: 0 }
-            const pendingCount = badgeCounts.pending > 0 ? badgeCounts.pending : systemCounts[city.id] ?? 0
-            const isFavorite = favoriteCityIds.includes(city.id)
+        <div className="mt-8 space-y-6">
+          {favorites.length > 0 && (
+            <div>
+              <h4 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-400">{t('vendor.cities.favorites')}</h4>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                {favorites.map((city) => {
+                  const badgeCounts = vendorCounts[city.id] ?? { submitted: 0, pending: 0 }
+                  const pendingCount = badgeCounts.pending > 0 ? badgeCounts.pending : systemCounts[city.id] ?? 0
+                  return (
+                    <button
+                      key={city.id}
+                      onClick={() => navigate(`/vendor/bid/${city.id}`)}
+                      className="group relative flex items-center justify-between rounded-full border border-slate-200 bg-white/90 px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+                    >
+                      <span className="flex items-center gap-2 truncate">
+                        <button
+                          type="button"
+                          aria-label={`Remove ${city.name} from favorites`}
+                          className="shrink-0 rounded p-0.5 hover:bg-yellow-50"
+                          onClick={(e) => handleToggleFavorite(e, city.id)}
+                        >
+                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                        </button>
+                        <span className="truncate">{city.state ? `${city.name}, ${city.state}` : city.name}</span>
+                      </span>
+                      <span className="ml-2 flex items-center gap-1">
+                        <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[#1f62f7] px-1 text-xs font-semibold text-white">
+                          {pendingCount}
+                        </span>
+                        {badgeCounts.submitted > 0 && (
+                          <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-emerald-500/90 px-1 text-xs font-semibold text-white">
+                            {badgeCounts.submitted}
+                          </span>
+                        )}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+          {groupedCities.map(({ letter, cities }) => {
+            if (cities.length === 0) return null
+            
             return (
-              <button
-                key={city.id}
-                onClick={() => navigate(`/vendor/bid/${city.id}`)}
-                className="group relative flex items-center justify-between rounded-full border border-slate-200 bg-white/90 px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
-              >
-                <span className="flex items-center gap-2 truncate">
-                  {isFavorite ? (
-                    <button
-                      type="button"
-                      aria-label={`Remove ${city.name} from favorites`}
-                      className="shrink-0 rounded p-0.5 hover:bg-yellow-50"
-                      onClick={(e) => handleToggleFavorite(e, city.id)}
-                    >
-                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      aria-label={`Add ${city.name} to favorites`}
-                      className="shrink-0 rounded p-0.5 hover:bg-yellow-50"
-                      onClick={(e) => handleToggleFavorite(e, city.id)}
-                    >
-                      <Star className="h-4 w-4 text-slate-300 hover:text-yellow-400" />
-                    </button>
-                  )}
-                  <span className="truncate">{city.state ? `${city.name}, ${city.state}` : city.name}</span>
-                </span>
-                <span className="ml-2 flex items-center gap-1">
-                  <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[#1f62f7] px-1 text-xs font-semibold text-white">
-                    {pendingCount}
-                  </span>
-                  {badgeCounts.submitted > 0 && (
-                    <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-emerald-500/90 px-1 text-xs font-semibold text-white">
-                      {badgeCounts.submitted}
-                    </span>
-                  )}
-                </span>
-              </button>
+              <div key={letter}>
+                <h4 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-400">{letter}</h4>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                  {cities.map((city) => {
+                    const badgeCounts = vendorCounts[city.id] ?? { submitted: 0, pending: 0 }
+                    const pendingCount = badgeCounts.pending > 0 ? badgeCounts.pending : systemCounts[city.id] ?? 0
+                    const isFavorite = favoriteCityIds.includes(city.id)
+                    return (
+                      <button
+                        key={city.id}
+                        onClick={() => navigate(`/vendor/bid/${city.id}`)}
+                        className="group relative flex items-center justify-between rounded-full border border-slate-200 bg-white/90 px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+                      >
+                        <span className="flex items-center gap-2 truncate">
+                          {isFavorite ? (
+                            <button
+                              type="button"
+                              aria-label={`Remove ${city.name} from favorites`}
+                              className="shrink-0 rounded p-0.5 hover:bg-yellow-50"
+                              onClick={(e) => handleToggleFavorite(e, city.id)}
+                            >
+                              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              aria-label={`Add ${city.name} to favorites`}
+                              className="shrink-0 rounded p-0.5 hover:bg-yellow-50"
+                              onClick={(e) => handleToggleFavorite(e, city.id)}
+                            >
+                              <Star className="h-4 w-4 text-slate-300 hover:text-yellow-400" />
+                            </button>
+                          )}
+                          <span className="truncate">{city.state ? `${city.name}, ${city.state}` : city.name}</span>
+                        </span>
+                        <span className="ml-2 flex items-center gap-1">
+                          <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[#1f62f7] px-1 text-xs font-semibold text-white">
+                            {pendingCount}
+                          </span>
+                          {badgeCounts.submitted > 0 && (
+                            <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-emerald-500/90 px-1 text-xs font-semibold text-white">
+                              {badgeCounts.submitted}
+                            </span>
+                          )}
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
             )
           })}
         </div>

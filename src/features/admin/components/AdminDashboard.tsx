@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Users, MapPin, Clock, TrendingUp, Search } from 'lucide-react'
@@ -23,6 +23,23 @@ export const AdminDashboard = () => {
   )
 
   const getCityDisplayName = (city: typeof cities[0]) => (city.state ? `${city.name}, ${city.state}` : city.name)
+
+  const groupedCities = useMemo(() => {
+    const groups: Record<string, typeof filteredCities> = {}
+    filteredCities.forEach((city) => {
+      const firstLetter = city.name.charAt(0).toUpperCase()
+      if (!groups[firstLetter]) {
+        groups[firstLetter] = []
+      }
+      groups[firstLetter].push(city)
+    })
+    return Object.keys(groups)
+      .sort()
+      .map((letter) => ({
+        letter,
+        cities: groups[letter].sort((a, b) => a.name.localeCompare(b.name)),
+      }))
+  }, [filteredCities])
 
   return (
     <Layout showLogout subtitle={t('admin.dashboard.title')} fullWidth>
@@ -113,21 +130,28 @@ export const AdminDashboard = () => {
             </div>
           </div>
 
-          <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-            {filteredCities.map((city) => {
-              const bidCount = bidCounts[city.id] || 0
-              const displayName = getCityDisplayName(city)
-              return (
-                <button
-                  key={city.id}
-                  onClick={() => navigate(`/admin/rates/${city.id}`)}
-                  className="flex flex-col rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-300 hover:bg-blue-50"
-                >
-                  <span>{displayName}</span>
-                  <span className="mt-1 text-xs font-medium text-slate-400">{t('admin.dashboard.viewRates.bidsCount', { count: bidCount })}</span>
-                </button>
-              )
-            })}
+          <div className="mt-8 space-y-6">
+            {groupedCities.map(({ letter, cities: letterCities }) => (
+              <div key={letter}>
+                <h4 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-400">{letter}</h4>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                  {letterCities.map((city) => {
+                    const bidCount = bidCounts[city.id] || 0
+                    const displayName = getCityDisplayName(city)
+                    return (
+                      <button
+                        key={city.id}
+                        onClick={() => navigate(`/admin/rates/${city.id}`)}
+                        className="flex flex-col rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-300 hover:bg-blue-50"
+                      >
+                        <span>{displayName}</span>
+                        <span className="mt-1 text-xs font-medium text-slate-400">{t('admin.dashboard.viewRates.bidsCount', { count: bidCount })}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
