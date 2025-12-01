@@ -145,7 +145,6 @@ export const RateManagement = () => {
                   <p className="text-base font-semibold">
                     {route.inlandCity.name}, {route.inlandCity.state}
                   </p>
-                  <p className="text-xs text-slate-400">#{route.inlandCityId.toUpperCase()}</p>
                   <p className="mt-2 text-xs font-semibold text-slate-500">{t('admin.rates.ratesCount', { count })}</p>
                 </button>
               )
