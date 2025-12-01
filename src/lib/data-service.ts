@@ -124,5 +124,12 @@ export const dataService = {
   deleteTemplate(vendorId: string, templateId: string): void {
     storage.deleteTemplate(vendorId, templateId)
   },
+
+  toggleFavorite(vendorId: string, cityId: string): boolean {
+    if (!vendorId || !cityId) {
+      throw new Error('Vendor ID and City ID are required')
+    }
+    return storage.toggleFavorite(vendorId, cityId)
+  },
 }
 

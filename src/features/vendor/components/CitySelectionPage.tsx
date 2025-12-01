@@ -1,12 +1,12 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Search } from 'lucide-react'
+import { Search, Star } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Layout } from '@/components/Layout'
 import { getBidCountsByCity, getPortCities } from '@/lib/mock-data'
 import { useAuth } from '@/features/auth/hooks/useAuth'
-import { useVendorBidCountsQuery } from '@/lib/query-hooks'
+import { useVendorBidCountsQuery, useFavoritesQuery, useToggleFavoriteMutation } from '@/lib/query-hooks'
 
 export const CitySelectionPage = () => {
   const { t } = useTranslation()
@@ -16,10 +16,24 @@ export const CitySelectionPage = () => {
   const portCities = useMemo(() => getPortCities(), [])
   const systemCounts = useMemo(() => getBidCountsByCity(), [])
   const { data: vendorCounts = {} } = useVendorBidCountsQuery(user?.vendorId)
+  const { data: favoriteCityIds = [] } = useFavoritesQuery(user?.vendorId)
+  const toggleFavoriteMutation = useToggleFavoriteMutation()
 
   const filteredCities = portCities.filter((city) =>
     city.name.toLowerCase().includes(searchQuery.toLowerCase()),
   )
+
+  const sortedCities = useMemo(() => {
+    const favorites = filteredCities.filter((city) => favoriteCityIds.includes(city.id))
+    const nonFavorites = filteredCities.filter((city) => !favoriteCityIds.includes(city.id))
+    return [...favorites, ...nonFavorites]
+  }, [filteredCities, favoriteCityIds])
+
+  const handleToggleFavorite = (e: React.MouseEvent, cityId: string) => {
+    e.stopPropagation()
+    if (!user?.vendorId) return
+    toggleFavoriteMutation.mutate({ vendorId: user.vendorId, cityId })
+  }
 
   return (
     <Layout showLogout fullWidth>
@@ -67,16 +81,38 @@ export const CitySelectionPage = () => {
         </div>
 
         <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-          {filteredCities.map((city) => {
+          {sortedCities.map((city) => {
             const badgeCounts = vendorCounts[city.id] ?? { submitted: 0, pending: 0 }
             const pendingCount = badgeCounts.pending > 0 ? badgeCounts.pending : systemCounts[city.id] ?? 0
+            const isFavorite = favoriteCityIds.includes(city.id)
             return (
               <button
                 key={city.id}
                 onClick={() => navigate(`/vendor/bid/${city.id}`)}
-                className="group flex items-center justify-between rounded-full border border-slate-200 bg-white/90 px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+                className="group relative flex items-center justify-between rounded-full border border-slate-200 bg-white/90 px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
               >
-                <span className="truncate">{city.state ? `${city.name}, ${city.state}` : city.name}</span>
+                <span className="flex items-center gap-2 truncate">
+                  {isFavorite ? (
+                    <button
+                      type="button"
+                      aria-label={`Remove ${city.name} from favorites`}
+                      className="shrink-0 rounded p-0.5 hover:bg-yellow-50"
+                      onClick={(e) => handleToggleFavorite(e, city.id)}
+                    >
+                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      aria-label={`Add ${city.name} to favorites`}
+                      className="shrink-0 rounded p-0.5 hover:bg-yellow-50"
+                      onClick={(e) => handleToggleFavorite(e, city.id)}
+                    >
+                      <Star className="h-4 w-4 text-slate-300 hover:text-yellow-400" />
+                    </button>
+                  )}
+                  <span className="truncate">{city.state ? `${city.name}, ${city.state}` : city.name}</span>
+                </span>
                 <span className="ml-2 flex items-center gap-1">
                   <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[#1f62f7] px-1 text-xs font-semibold text-white">
                     {pendingCount}

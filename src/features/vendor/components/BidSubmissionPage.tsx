@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Check, FileText, MapPin, RefreshCw, Trash2 } from 'lucide-react'
+import { Check, FileText, MapPin, RefreshCw, Star, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -31,6 +31,8 @@ import {
   useTemplatesQuery,
   useSaveTemplateMutation,
   useDeleteTemplateMutation,
+  useFavoritesQuery,
+  useToggleFavoriteMutation,
 } from '@/lib/query-hooks'
 
 const emptyAccessorials = {
@@ -67,6 +69,8 @@ export const BidSubmissionPage = () => {
   const { data: templates = [] } = useTemplatesQuery(user?.vendorId)
   const saveTemplateMutation = useSaveTemplateMutation()
   const deleteTemplateMutation = useDeleteTemplateMutation()
+  const { data: favoriteCityIds = [] } = useFavoritesQuery(user?.vendorId)
+  const toggleFavoriteMutation = useToggleFavoriteMutation()
 
   const portCity = portCityId ? getCityById(portCityId) : null
 
@@ -326,9 +330,38 @@ export const BidSubmissionPage = () => {
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
                 <MapPin className="h-6 w-6" />
               </div>
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">{t('vendor.bid.portLocation')}</p>
-                <p className="text-2xl font-semibold text-slate-900">{portCity.name.toUpperCase()}</p>
+              <div className="flex items-center gap-2">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">{t('vendor.bid.portLocation')}</p>
+                  <p className="text-2xl font-semibold text-slate-900">{portCity.name.toUpperCase()}</p>
+                </div>
+                {favoriteCityIds.includes(portCityId) ? (
+                  <button
+                    type="button"
+                    aria-label={`Remove ${portCity.name} from favorites`}
+                    className="rounded p-1 hover:bg-yellow-50"
+                    onClick={() => {
+                      if (user?.vendorId) {
+                        toggleFavoriteMutation.mutate({ vendorId: user.vendorId, cityId: portCityId })
+                      }
+                    }}
+                  >
+                    <Star className="h-5 w-5 fill-yellow-400 text-yellow-400 hover:fill-yellow-500 hover:text-yellow-500" />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    aria-label={`Add ${portCity.name} to favorites`}
+                    className="rounded p-1 hover:bg-yellow-50"
+                    onClick={() => {
+                      if (user?.vendorId) {
+                        toggleFavoriteMutation.mutate({ vendorId: user.vendorId, cityId: portCityId })
+                      }
+                    }}
+                  >
+                    <Star className="h-5 w-5 text-slate-300 hover:text-yellow-400" />
+                  </button>
+                )}
               </div>
             </div>
             {submittedBidMessage && (

@@ -17,6 +17,7 @@ type Database = {
   accounts: Account[]
   pendingRegistrations: PendingRegistration[]
   templates: AccessorialTemplate[]
+  favorites: { vendorId: string; cityId: string }[]
 }
 
 const seedAccounts: Account[] = [
@@ -47,6 +48,7 @@ const createSeedDatabase = (): Database => ({
   accounts: clone(seedAccounts),
   pendingRegistrations: [],
   templates: [],
+  favorites: [],
 })
 
 const readDatabase = (): Database => {
@@ -255,6 +257,28 @@ export const storage = {
     mutateDb((db) => {
       db.templates = db.templates.filter((t) => !(t.id === templateId && t.vendorId === vendorId))
     })
+  },
+  getFavorites(vendorId: string): string[] {
+    if (!vendorId) return []
+    return readDatabase()
+      .favorites.filter((f) => f.vendorId === vendorId)
+      .map((f) => f.cityId)
+  },
+  toggleFavorite(vendorId: string, cityId: string): boolean {
+    return mutateDb((db) => {
+      const existing = db.favorites.find((f) => f.vendorId === vendorId && f.cityId === cityId)
+      if (existing) {
+        db.favorites = db.favorites.filter((f) => !(f.vendorId === vendorId && f.cityId === cityId))
+        return false // Removed from favorites
+      } else {
+        db.favorites.push({ vendorId, cityId })
+        return true // Added to favorites
+      }
+    })
+  },
+  isFavorite(vendorId: string, cityId: string): boolean {
+    if (!vendorId || !cityId) return false
+    return readDatabase().favorites.some((f) => f.vendorId === vendorId && f.cityId === cityId)
   },
 }
 

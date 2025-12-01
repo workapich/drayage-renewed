@@ -11,6 +11,7 @@ export const queryKeys = {
   statistics: ['statistics'] as const,
   vendorCounts: (vendorId: string) => ['vendor-counts', vendorId] as const,
   templates: (vendorId: string) => ['templates', vendorId] as const,
+  favorites: (vendorId: string) => ['favorites', vendorId] as const,
 }
 
 export const useVendorsQuery = () =>
@@ -150,6 +151,26 @@ export const useDeleteTemplateMutation = () => {
     },
     onSuccess: ({ vendorId }) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.templates(vendorId) })
+    },
+  })
+}
+
+export const useFavoritesQuery = (vendorId?: string) =>
+  useQuery({
+    queryKey: queryKeys.favorites(vendorId ?? 'unknown'),
+    queryFn: async () => (vendorId ? storage.getFavorites(vendorId) : []),
+    enabled: Boolean(vendorId),
+  })
+
+export const useToggleFavoriteMutation = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ vendorId, cityId }: { vendorId: string; cityId: string }) => {
+      const isFavorite = dataService.toggleFavorite(vendorId, cityId)
+      return { vendorId, cityId, isFavorite }
+    },
+    onSuccess: ({ vendorId }) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.favorites(vendorId) })
     },
   })
 }
