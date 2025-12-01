@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Search, ChevronDown } from 'lucide-react'
+import { Search, ChevronDown, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -24,6 +24,7 @@ export const RateManagement = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [isRouteModalOpen, setIsRouteModalOpen] = useState(false)
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
+  const [expandedBids, setExpandedBids] = useState<Set<string>>(new Set())
   const { data: routes = [] } = useRoutesQuery(portCityId)
   const { data: allPortBids = [] } = useBidsByPortQuery(portCityId ?? '')
   const { data: bids = [] } = useBidsByRouteQuery(selectedDestinationId ?? '')
@@ -84,6 +85,18 @@ export const RateManagement = () => {
       style: 'currency',
       currency: 'USD',
     }).format(value)
+
+  const toggleBidExpansion = (bidId: string) => {
+    setExpandedBids((prev) => {
+      const next = new Set(prev)
+      if (next.has(bidId)) {
+        next.delete(bidId)
+      } else {
+        next.add(bidId)
+      }
+      return next
+    })
+  }
 
   return (
     <Layout
@@ -182,19 +195,68 @@ export const RateManagement = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredBids.map((bid) => (
-                  <TableRow key={bid.id} className="text-sm">
-                    <TableCell className="font-semibold text-slate-900">{bid.vendorId}</TableCell>
-                    <TableCell className="text-slate-600">{bid.vendorEmail}</TableCell>
-                    <TableCell className="text-slate-600">
-                      {selectedRoute?.inlandCity.name}, {selectedRoute?.inlandCity.state}
-                    </TableCell>
-                    <TableCell className="text-slate-500">{formatDate(bid.submittedAt)}</TableCell>
-                    <TableCell className="font-semibold text-slate-900">{formatCurrency(bid.baseRate)}</TableCell>
-                    <TableCell className="text-slate-600">{bid.fsc.toFixed(2)}%</TableCell>
-                    <TableCell className="font-semibold text-blue-600">{formatCurrency(bid.total)}</TableCell>
-                  </TableRow>
-                ))}
+                {filteredBids.map((bid) => {
+                  const isExpanded = expandedBids.has(bid.id)
+                  return (
+                    <>
+                      <TableRow
+                        key={bid.id}
+                        className="cursor-pointer text-sm transition-colors hover:bg-slate-50"
+                        onClick={() => toggleBidExpansion(bid.id)}
+                      >
+                        <TableCell className="font-semibold text-slate-900">
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                toggleBidExpansion(bid.id)
+                              }}
+                              className="flex items-center justify-center"
+                            >
+                              {isExpanded ? (
+                                <ChevronDown className="h-4 w-4 text-slate-400" />
+                              ) : (
+                                <ChevronRight className="h-4 w-4 text-slate-400" />
+                              )}
+                            </button>
+                            {bid.vendorId}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-slate-600">{bid.vendorEmail}</TableCell>
+                        <TableCell className="text-slate-600">
+                          {selectedRoute?.inlandCity.name}, {selectedRoute?.inlandCity.state}
+                        </TableCell>
+                        <TableCell className="text-slate-500">{formatDate(bid.submittedAt)}</TableCell>
+                        <TableCell className="font-semibold text-slate-900">{formatCurrency(bid.baseRate)}</TableCell>
+                        <TableCell className="text-slate-600">{bid.fsc.toFixed(2)}%</TableCell>
+                        <TableCell className="font-semibold text-blue-600">{formatCurrency(bid.total)}</TableCell>
+                      </TableRow>
+                      {isExpanded && (
+                        <TableRow key={`${bid.id}-detail`}>
+                          <TableCell colSpan={7} className="bg-slate-50 p-6">
+                            <div className="rounded-lg border border-slate-200 bg-white p-4">
+                              <p className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+                                Accessorial Fees
+                              </p>
+                              <ul className="grid gap-4 md:grid-cols-4 list-none p-0 m-0" role='list'>
+                                {Object.entries(bid.accessorials).map(([key, value]) => (
+                                  <li key={key} className="space-y-2" role='listitem'>
+                                    <p className="text-xs font-semibold text-slate-500">
+                                      {t(`vendor.bid.accessorialLabels.${key}`)}
+                                    </p>
+                                    <div className="h-11 rounded-2xl border border-slate-100 bg-slate-50 px-4 flex items-center">
+                                      <p className="text-sm font-semibold text-slate-900">{formatCurrency(value)}</p>
+                                    </div>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </>
+                  )
+                })}
                 {filteredBids.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={7} className="py-10 text-center text-sm text-slate-500">
