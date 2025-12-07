@@ -28,7 +28,7 @@ export const Layout = ({
   fullWidth = false,
 }: LayoutProps) => {
   const { t } = useTranslation()
-  const { logout } = useAuth()
+  const { logout, user } = useAuth()
   const navigate = useNavigate()
   const defaultBackLabel = backLabel ?? t('common.back')
 
@@ -64,6 +64,15 @@ export const Layout = ({
                 className="text-sm font-semibold text-slate-600 hover:text-blue-600"
               >
                 ← {defaultBackLabel}
+              </Button>
+            )}
+            {user?.role === 'vendor' && user.canWhitelistVendors && (
+              <Button
+                variant="ghost"
+                onClick={() => navigate('/vendor/vendors')}
+                className="text-sm font-semibold uppercase tracking-wide text-blue-600 hover:text-blue-700"
+              >
+                {t('vendor.whitelist.linkLabel')}
               </Button>
             )}
             {showLogout && (

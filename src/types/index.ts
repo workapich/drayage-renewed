@@ -4,6 +4,7 @@ export interface User {
   mcid?: string
   role: 'vendor' | 'admin'
   vendorId?: string
+  canWhitelistVendors?: boolean
 }
 
 export interface AuthResponse {
@@ -37,6 +38,8 @@ export interface Vendor {
   status: VendorStatus
   totalBids: number
   joinedDate: string
+  createdByVendorId?: string
+  canWhitelistVendors?: boolean
 }
 
 export interface AccessorialFees {
@@ -87,6 +90,7 @@ export interface Account {
   mcid?: string
   vendorId?: string
   status?: VendorStatus
+  canWhitelistVendors?: boolean
 }
 
 export interface AccessorialTemplate {

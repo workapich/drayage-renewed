@@ -110,9 +110,23 @@ export const useDeleteVendorMutation = () => {
 export const useAddVendorMutation = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (email: string) => dataService.addVendor(email),
+    mutationFn: async (payload: { email: string; createdByVendorId?: string; canWhitelistVendors?: boolean }) =>
+      dataService.addVendor(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.vendors })
+    },
+  })
+}
+
+export const useVendorWhitelistPermissionMutation = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ vendorId, canWhitelistVendors }: { vendorId: string; canWhitelistVendors: boolean }) =>
+      dataService.updateVendorWhitelistPermission(vendorId, canWhitelistVendors),
+    onSuccess: (vendor) => {
+      if (vendor) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.vendors })
+      }
     },
   })
 }

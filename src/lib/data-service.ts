@@ -80,7 +80,15 @@ export const dataService = {
     return storage.deleteVendor(vendorId)
   },
 
-  addVendor(email: string): Vendor {
+  addVendor({
+    email,
+    createdByVendorId,
+    canWhitelistVendors = false,
+  }: {
+    email: string
+    createdByVendorId?: string
+    canWhitelistVendors?: boolean
+  }): Vendor {
     const existing = storage.getVendors().find((v) => v.email.toLowerCase() === email.toLowerCase())
     if (existing) {
       throw new Error('Vendor with this email already exists')
@@ -93,9 +101,15 @@ export const dataService = {
       status: 'active',
       totalBids: 0,
       joinedDate: new Date().toLocaleDateString('en-US'),
+      createdByVendorId,
+      canWhitelistVendors,
     }
 
     return storage.upsertVendor(vendor)
+  },
+
+  updateVendorWhitelistPermission(vendorId: string, canWhitelistVendors: boolean) {
+    return storage.updateVendorWhitelistPermission(vendorId, canWhitelistVendors)
   },
 
   saveTemplate(vendorId: string, name: string, accessorials: Record<string, number>): AccessorialTemplate {

@@ -26,6 +26,7 @@ const seedAccounts: Account[] = [
     email: 'admin@gmail.com',
     password: '123456',
     role: 'admin',
+    canWhitelistVendors: true,
   },
   {
     id: 'acct-vendor',
@@ -35,6 +36,7 @@ const seedAccounts: Account[] = [
     mcid: 'MC-123456',
     vendorId: 'v1',
     status: 'active',
+    canWhitelistVendors: true,
   },
 ]
 
@@ -92,6 +94,18 @@ export const storage = {
     const seeded = createSeedDatabase()
     persistDatabase(seeded)
     return seeded
+  },
+  updateVendorWhitelistPermission(vendorId: string, canWhitelistVendors: boolean) {
+    return mutateDb((db) => {
+      const vendor = db.vendors.find((v) => v.id === vendorId)
+      if (!vendor) return null
+      vendor.canWhitelistVendors = canWhitelistVendors
+      const account = db.accounts.find((acct) => acct.vendorId === vendorId)
+      if (account) {
+        account.canWhitelistVendors = canWhitelistVendors
+      }
+      return vendor
+    })
   },
   getVendors(): Vendor[] {
     return readDatabase().vendors

@@ -15,10 +15,11 @@ import { useVendorsQuery, useAddVendorMutation } from '@/lib/query-hooks'
 interface AddVendorModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  createdByVendorId?: string
 }
 
 
-export const AddVendorModal = ({ open, onOpenChange }: AddVendorModalProps) => {
+export const AddVendorModal = ({ open, onOpenChange, createdByVendorId }: AddVendorModalProps) => {
   const { t } = useTranslation()
   const [emails, setEmails] = useState<string[]>([])
   const [inputValue, setInputValue] = useState('')
@@ -55,7 +56,9 @@ export const AddVendorModal = ({ open, onOpenChange }: AddVendorModalProps) => {
     }
 
     try {
-      await Promise.all(newEmails.map((email) => addVendorMutation.mutateAsync(email)))
+      await Promise.all(
+        newEmails.map((email) => addVendorMutation.mutateAsync({ email, createdByVendorId })),
+      )
       setFeedback(t('admin.addVendor.vendorsAdded', { count: newEmails.length }))
       setEmails([])
       setInputValue('')

@@ -7,6 +7,7 @@ import { RegisterPage } from './features/auth/components/RegisterPage'
 import { EmailConfirmationPage } from './features/auth/components/EmailConfirmationPage'
 import { CitySelectionPage } from './features/vendor/components/CitySelectionPage'
 import { BidSubmissionPage } from './features/vendor/components/BidSubmissionPage'
+import { VendorWhitelistPage } from './features/vendor/components/VendorWhitelistPage'
 import { AdminDashboard } from './features/admin/components/AdminDashboard'
 import { VendorManagement } from './features/admin/components/VendorManagement'
 import { RateManagement } from './features/admin/components/RateManagement'
@@ -44,6 +45,14 @@ function App() {
               element={
                 <ProtectedRoute requiredRole="vendor">
                   <BidSubmissionPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/vendor/vendors"
+              element={
+                <ProtectedRoute requiredRole="vendor">
+                  <VendorWhitelistPage />
                 </ProtectedRoute>
               }
             />

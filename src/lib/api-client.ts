@@ -60,12 +60,13 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 const createToken = (prefix: string) => `${prefix}-${Math.random().toString(36).slice(2)}`
 
-const buildUserFromAccount = (account: Account): User => ({
+const buildUserFromAccount = (account: Account, vendor?: Vendor): User => ({
   id: account.id,
   email: account.email,
   role: account.role,
   mcid: account.mcid,
   vendorId: account.vendorId,
+  canWhitelistVendors: vendor?.canWhitelistVendors ?? account.canWhitelistVendors,
 })
 
 const ensureVendorAccountActive = (account: Account, vendor: Vendor | undefined) => {
@@ -92,7 +93,7 @@ export const api = {
     const vendor = account.vendorId ? storage.getVendorById(account.vendorId) : undefined
     ensureVendorAccountActive(account, vendor)
 
-    const user = buildUserFromAccount(account)
+    const user = buildUserFromAccount(account, vendor)
     const response: AuthResponse = {
       accessToken: createToken('access'),
       refreshToken: createToken('refresh'),
@@ -137,6 +138,8 @@ export const api = {
       status: 'active',
       totalBids: 0,
       joinedDate: new Date().toLocaleDateString('en-US'),
+      createdByVendorId: undefined,
+      canWhitelistVendors: false,
     }
 
     storage.upsertVendor(vendor)
@@ -149,6 +152,7 @@ export const api = {
       mcid: pending.mcid,
       vendorId,
       status: 'active',
+      canWhitelistVendors: false,
     }
     storage.upsertAccount(account)
 

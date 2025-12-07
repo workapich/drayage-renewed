@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Ban, Trash2, CheckCircle2 } from 'lucide-react'
+import { Ban, Trash2, CheckCircle2, ShieldCheck, Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
   Table,
   TableBody,
@@ -13,7 +14,19 @@ import {
 import { Card } from '@/components/ui/card'
 import { Layout } from '@/components/Layout'
 import { AddVendorModal } from './AddVendorModal'
-import { useDeleteVendorMutation, useVendorStatusMutation, useVendorsQuery } from '@/lib/query-hooks'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
+  useDeleteVendorMutation,
+  useVendorStatusMutation,
+  useVendorWhitelistPermissionMutation,
+  useVendorsQuery,
+} from '@/lib/query-hooks'
 import type { VendorStatus } from '@/types'
 
 const statusStyles: Record<VendorStatus, string> = {
@@ -25,9 +38,24 @@ const statusStyles: Record<VendorStatus, string> = {
 export const VendorManagement = () => {
   const { t } = useTranslation()
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [isBulkModalOpen, setIsBulkModalOpen] = useState(false)
+  const [selectedVendorIds, setSelectedVendorIds] = useState<string[]>([])
+  const [inputValue, setInputValue] = useState('')
+  const [feedback, setFeedback] = useState<string | null>(null)
   const { data: vendors = [] } = useVendorsQuery()
   const statusMutation = useVendorStatusMutation()
   const deleteMutation = useDeleteVendorMutation()
+  const whitelistMutation = useVendorWhitelistPermissionMutation()
+
+  const grantableVendors = useMemo(
+    () => vendors.filter((vendor) => !vendor.canWhitelistVendors),
+    [vendors],
+  )
+
+  const selectedVendors = useMemo(
+    () => vendors.filter((vendor) => selectedVendorIds.includes(vendor.id)),
+    [vendors, selectedVendorIds],
+  )
 
   const toggleBlockStatus = (vendorId: string, currentStatus: VendorStatus) => {
     const nextStatus = currentStatus === 'blocked' ? 'active' : 'blocked'
@@ -36,6 +64,165 @@ export const VendorManagement = () => {
 
   const handleDelete = (vendorId: string) => {
     deleteMutation.mutate(vendorId)
+  }
+
+  const toggleWhitelistPrivilege = (vendorId: string, canWhitelistVendors?: boolean) => {
+    whitelistMutation.mutate({ vendorId, canWhitelistVendors: !canWhitelistVendors })
+  }
+
+  const processVendorValue = (searchValue: string): { success: boolean; message?: string } => {
+    const trimmedValue = searchValue.trim().toLowerCase()
+    if (!trimmedValue) return { success: false }
+
+    // Try to find vendor by email or MC-ID in all vendors
+    const vendor = vendors.find(
+      (v) =>
+        v.email.toLowerCase() === trimmedValue ||
+        v.mcid.toLowerCase() === trimmedValue ||
+        v.email.toLowerCase().includes(trimmedValue) ||
+        v.mcid.toLowerCase().includes(trimmedValue),
+    )
+
+    if (!vendor) {
+      return { success: false, message: t('admin.vendors.bulkWhitelist.notFound') }
+    }
+
+    // Skip if vendor already has permission
+    if (vendor.canWhitelistVendors) {
+      return { success: false, message: t('admin.vendors.bulkWhitelist.alreadyHasPermission') }
+    }
+
+    // Add vendor if not already selected
+    if (selectedVendorIds.includes(vendor.id)) {
+      return { success: false, message: t('admin.vendors.bulkWhitelist.alreadySelected') }
+    }
+
+    setSelectedVendorIds((prev) => [...prev, vendor.id])
+    return { success: true }
+  }
+
+  const processMultipleValues = (value: string) => {
+    // Split by comma and process each value
+    const values = value.split(',').map((v) => v.trim()).filter((v) => v.length > 0)
+    
+    if (values.length === 0) return
+
+    let successCount = 0
+    let skippedCount = 0
+    const messages: string[] = []
+
+    values.forEach((val) => {
+      const result = processVendorValue(val)
+      if (result.success) {
+        successCount++
+      } else if (result.message) {
+        skippedCount++
+        if (!messages.includes(result.message)) {
+          messages.push(result.message)
+        }
+      }
+    })
+
+    // Show feedback based on results
+    if (successCount > 0 && skippedCount === 0) {
+      setFeedback(t('admin.vendors.bulkWhitelist.bulkAdded', { count: successCount }))
+    } else if (successCount > 0 && skippedCount > 0) {
+      setFeedback(
+        t('admin.vendors.bulkWhitelist.bulkPartial', {
+          added: successCount,
+          skipped: skippedCount,
+        }),
+      )
+    } else if (skippedCount > 0) {
+      setFeedback(messages[0] || t('admin.vendors.bulkWhitelist.bulkNoneAdded'))
+    }
+
+    setTimeout(() => setFeedback(null), 3000)
+    setInputValue('')
+  }
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setInputValue(value)
+
+    // Check if value contains commas (bulk paste)
+    if (value.includes(',')) {
+      // Process all comma-separated values
+      processMultipleValues(value)
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault()
+      const searchValue = inputValue.trim()
+      if (!searchValue) return
+
+      // If input contains commas, process all values
+      if (searchValue.includes(',')) {
+        processMultipleValues(searchValue)
+      } else {
+        // Process single value
+        const result = processVendorValue(searchValue)
+        if (result.message) {
+          setFeedback(result.message)
+          setTimeout(() => setFeedback(null), 2000)
+        }
+        if (result.success) {
+          setInputValue('')
+        }
+      }
+    }
+  }
+
+  const handleRemoveVendor = (vendorId: string) => {
+    setSelectedVendorIds((prev) => prev.filter((id) => id !== vendorId))
+  }
+
+  const handleCSVImport = () => {
+    setFeedback(t('admin.vendors.bulkWhitelist.csvNotAvailable'))
+  }
+
+  const handleBulkGrant = async () => {
+    if (selectedVendorIds.length === 0) return
+
+    try {
+      // Filter out vendors that already have permission (safety check)
+      const vendorsToGrant = selectedVendorIds.filter((vendorId) => {
+        const vendor = vendors.find((v) => v.id === vendorId)
+        return vendor && !vendor.canWhitelistVendors
+      })
+
+      if (vendorsToGrant.length === 0) {
+        setFeedback(t('admin.vendors.bulkWhitelist.allAlreadyHavePermission'))
+        setTimeout(() => setFeedback(null), 2000)
+        return
+      }
+
+      await Promise.all(
+        vendorsToGrant.map((vendorId) =>
+          whitelistMutation.mutateAsync({ vendorId, canWhitelistVendors: true }),
+        ),
+      )
+      setFeedback(t('admin.vendors.bulkWhitelist.permissionsGranted', { count: vendorsToGrant.length }))
+      setSelectedVendorIds([])
+      setInputValue('')
+      setTimeout(() => {
+        setFeedback(null)
+        setIsBulkModalOpen(false)
+      }, 800)
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : t('admin.vendors.bulkWhitelist.error'))
+    }
+  }
+
+  const handleBulkModalClose = (open: boolean) => {
+    if (!open) {
+      setSelectedVendorIds([])
+      setInputValue('')
+      setFeedback(null)
+    }
+    setIsBulkModalOpen(open)
   }
 
   return (
@@ -47,12 +234,20 @@ export const VendorManagement = () => {
             <h2 className="mt-2 text-3xl font-semibold text-slate-900">{t('admin.vendors.title')}</h2>
             <p className="text-sm text-slate-500">{t('admin.vendors.description')}</p>
           </div>
-          <Button
-            onClick={() => setIsAddModalOpen(true)}
-            className="h-12 rounded-2xl bg-[#1f62f7] px-5 text-sm font-semibold text-white hover:bg-[#1a4fd4]"
-          >
-            {t('admin.vendors.whitelistButton')}
-          </Button>
+          <div className="flex flex-wrap gap-3">
+            <Button
+              onClick={() => setIsBulkModalOpen(true)}
+              className="h-12 rounded-2xl bg-[#1f62f7] px-5 text-sm font-semibold text-white hover:bg-[#1a4fd4]"
+            >
+              {t('admin.vendors.bulkWhitelistButton')}
+            </Button>
+            <Button
+              onClick={() => setIsAddModalOpen(true)}
+              className="h-12 rounded-2xl bg-[#1f62f7] px-5 text-sm font-semibold text-white hover:bg-[#1a4fd4]"
+            >
+              {t('admin.vendors.whitelistButton')}
+            </Button>
+          </div>
         </div>
 
         <Card className="rounded-[32px] border border-white/70 bg-white/95 p-0 shadow-[0_35px_75px_rgba(15,23,42,0.12)]">
@@ -98,6 +293,27 @@ export const VendorManagement = () => {
                         )}
                       </button>
                       <button
+                        className={`flex h-9 w-9 items-center justify-center rounded-full border ${
+                          vendor.canWhitelistVendors
+                            ? 'border-blue-100 bg-blue-50 text-blue-600'
+                            : 'border-slate-200 text-slate-500 hover:bg-slate-50'
+                        }`}
+                        title={
+                          vendor.canWhitelistVendors
+                            ? t('admin.vendors.actions.revokeWhitelist')
+                            : t('admin.vendors.actions.grantWhitelist')
+                        }
+                        aria-label={
+                          vendor.canWhitelistVendors
+                            ? t('admin.vendors.actions.revokeWhitelist')
+                            : t('admin.vendors.actions.grantWhitelist')
+                        }
+                        onClick={() => toggleWhitelistPrivilege(vendor.id, vendor.canWhitelistVendors)}
+                        disabled={whitelistMutation.isPending}
+                      >
+                        <ShieldCheck className="h-4 w-4" />
+                      </button>
+                      <button
                         className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 hover:bg-slate-50"
                         title={t('admin.vendors.actions.delete')}
                         onClick={() => handleDelete(vendor.id)}
@@ -121,6 +337,79 @@ export const VendorManagement = () => {
         </Card>
 
         <AddVendorModal open={isAddModalOpen} onOpenChange={setIsAddModalOpen} />
+        <Dialog open={isBulkModalOpen} onOpenChange={handleBulkModalClose}>
+          <DialogContent className="sm:max-w-lg">
+            <DialogHeader>
+              <DialogTitle className="text-center text-2xl font-semibold text-slate-900">
+                {t('admin.vendors.bulkWhitelistTitle')}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Input
+                  placeholder={t('admin.vendors.bulkWhitelist.placeholder')}
+                  value={inputValue}
+                  onChange={handleInputChange}
+                  onKeyDown={handleKeyDown}
+                  className="h-12 rounded-2xl border-slate-200"
+                />
+                <p className="text-xs text-slate-500">{t('admin.vendors.bulkWhitelist.hint')}</p>
+              </div>
+
+              {selectedVendors.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {selectedVendors.map((vendor) => (
+                    <div
+                      key={vendor.id}
+                      className="flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-sm font-semibold text-blue-600"
+                    >
+                      <span>{vendor.email}</span>
+                      <button
+                        onClick={() => handleRemoveVendor(vendor.id)}
+                        className="text-blue-500 hover:text-blue-700"
+                        aria-label={t('admin.vendors.bulkWhitelist.removeVendor')}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Button variant="outline" className="h-11 w-full rounded-2xl" onClick={handleCSVImport}>
+                  <Upload className="mr-2 h-4 w-4" />
+                  {t('admin.vendors.bulkWhitelist.importButton')}
+                </Button>
+                <p className="text-xs text-slate-500">{t('admin.vendors.bulkWhitelist.importHint')}</p>
+              </div>
+
+              {grantableVendors.length === 0 && (
+                <div className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700">
+                  {t('admin.vendors.bulkWhitelistEmpty')}
+                </div>
+              )}
+
+              {feedback && (
+                <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-700">
+                  {feedback}
+                </div>
+              )}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => handleBulkModalClose(false)} className="rounded-2xl">
+                {t('common.cancel')}
+              </Button>
+              <Button
+                onClick={handleBulkGrant}
+                disabled={selectedVendorIds.length === 0 || whitelistMutation.isPending}
+                className="rounded-2xl bg-[#1f62f7] px-6 text-white hover:bg-[#1a4fd4]"
+              >
+                {t('admin.vendors.bulkWhitelistConfirm')}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </section>
     </Layout>
   )

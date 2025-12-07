@@ -112,6 +112,15 @@
         "overweight": "Overweight",
         "prepull": "Prepull"
       }
+    },
+    "whitelist": {
+      "linkLabel": "Whitelist vendors",
+      "title": "Vendor Whitelist",
+      "heading": "Whitelist Vendors",
+      "description": "Invite and manage the vendors you have permission to onboard.",
+      "whitelistButton": "Whitelist Vendor Email",
+      "backToCities": "Back to Cities",
+      "noVendors": "No vendors added by you yet."
     }
   },
   "admin": {
@@ -150,6 +159,28 @@
       "title": "Vendor Management",
       "description": "Manage all vendors in the system and whitelist new emails.",
       "whitelistButton": "Whitelist Vendor Email",
+      "bulkWhitelistButton": "Bulk whitelist permissions",
+      "bulkWhitelistTitle": "Grant whitelist permissions",
+      "bulkWhitelistDescription": "Select vendors to allow them to whitelist others.",
+      "bulkWhitelistEmpty": "All vendors already have whitelist permissions.",
+      "bulkWhitelistConfirm": "Grant permissions",
+      "bulkWhitelist": {
+        "placeholder": "Enter vendor email or MC-ID",
+        "hint": "Type vendor email or MC-ID and press Enter or comma to add. You can paste multiple comma-separated values.",
+        "alreadySelected": "Vendor already selected",
+        "notFound": "Vendor not found",
+        "alreadyHasPermission": "Vendor already has whitelist permission (skipped)",
+        "allAlreadyHavePermission": "All selected vendors already have whitelist permissions",
+        "permissionsGranted": "Whitelist permissions granted to {{count}} vendor(s)",
+        "error": "Failed to grant permissions",
+        "removeVendor": "Remove vendor",
+        "importButton": "Import from CSV",
+        "importHint": "Upload a CSV file with vendor emails or MC-IDs (one per line)",
+        "csvNotAvailable": "CSV import is not available yet",
+        "bulkAdded": "Added {{count}} vendor(s)",
+        "bulkPartial": "Added {{added}} vendor(s), {{skipped}} skipped",
+        "bulkNoneAdded": "No vendors were added"
+      },
       "table": {
         "mcid": "MC-ID",
         "email": "Email",
@@ -162,7 +193,9 @@
       "actions": {
         "unblock": "Unblock vendor",
         "block": "Block vendor",
-        "delete": "Delete vendor"
+        "delete": "Delete vendor",
+        "grantWhitelist": "Allow this vendor to whitelist others",
+        "revokeWhitelist": "Revoke whitelist privileges"
       }
     },
     "rates": {
