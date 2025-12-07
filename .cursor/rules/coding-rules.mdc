@@ -67,6 +67,13 @@ alwaysApply: true
 - When moving to real API, update all tests and code to hit real endpoints and use real data schemas.
 - Avoid direct usage of `localStorage` APIs; always use provided abstractions.
 
+/* COLOR PALETTE */
+- Always use colors from the Tailwind color palette defined in `src/index.css` and `tailwind.config.js`.
+- Never use hardcoded hex color values (e.g., `bg-[#1f62f7]`) in components.
+- Use semantic color tokens: `bg-primary`, `bg-primary-hover`, `text-primary`, etc.
+- Primary color: `bg-primary` / `hover:bg-primary-hover` (defined as CSS variables in `src/index.css`).
+- If a new color is needed, add it to the palette first, then use it via Tailwind classes.
+
 /* LINTING & FORMATTING */
 - Run `npm run lint` before pushing.
 - Use Prettier formatting (default config).

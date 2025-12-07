@@ -57,7 +57,7 @@ export const AdminDashboard = () => {
               </div>
             </div>
             <Button
-              className="mt-6 h-12 w-full rounded-2xl bg-[#1f62f7] text-base font-semibold text-white hover:bg-[#1a4fd4]"
+              className="mt-6 h-12 w-full rounded-2xl bg-primary text-base font-semibold text-white hover:bg-primary-hover"
               onClick={() => navigate('/admin/vendors')}
             >
               {t('admin.dashboard.vendors.button')}

@@ -554,7 +554,7 @@ export const BidSubmissionPage = () => {
             <Button
               onClick={() => handleSaveTemplateDialogClose(true)}
               disabled={!templateName.trim()}
-              className="rounded-2xl bg-[#1f62f7] px-6 text-white hover:bg-[#2352d6]"
+              className="rounded-2xl bg-primary px-6 text-white hover:bg-primary-hover"
             >
               {t('vendor.bid.yesSave')}
             </Button>

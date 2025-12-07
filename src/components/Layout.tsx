@@ -42,7 +42,7 @@ export const Layout = ({
       <header className="sticky top-0 z-20 border-b border-white/60 bg-white/90 backdrop-blur-sm">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#1f62f7] shadow-lg shadow-blue-500/30">
+            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary shadow-lg shadow-blue-500/30">
               <Truck className="h-6 w-6 text-white" />
             </div>
             <div>

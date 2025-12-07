@@ -121,7 +121,7 @@ export const RouteCreationModal = ({ open, onOpenChange, defaultPortId }: RouteC
           <Button
             onClick={handleCreate}
             disabled={!startingCity || !endingCity || createRouteMutation.isPending}
-            className="rounded-2xl bg-[#1f62f7] px-6 text-white hover:bg-[#2352d6]"
+            className="rounded-2xl bg-primary px-6 text-white hover:bg-primary-hover"
           >
             {createRouteMutation.isPending ? t('admin.routeCreation.createButtonLoading') : t('admin.routeCreation.createButton')}
           </Button>

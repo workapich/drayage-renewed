@@ -128,7 +128,7 @@ export const AddVendorModal = ({ open, onOpenChange, createdByVendorId }: AddVen
           <Button
             onClick={handleAdd}
             disabled={emails.length === 0}
-            className="rounded-2xl bg-[#1f62f7] px-6 text-white hover:bg-[#1a4fd4]"
+            className="rounded-2xl bg-primary px-6 text-white hover:bg-primary-hover"
           >
             {t('admin.addVendor.addButton')}
           </Button>

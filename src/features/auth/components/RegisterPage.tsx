@@ -37,7 +37,7 @@ export const RegisterPage = () => {
     <div className="min-h-screen bg-app-gradient">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
         <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#1f62f7] shadow-lg shadow-blue-500/30">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary shadow-lg shadow-blue-500/30">
             <svg className="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path
                 strokeLinecap="round"

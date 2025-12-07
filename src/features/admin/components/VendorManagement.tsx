@@ -237,13 +237,13 @@ export const VendorManagement = () => {
           <div className="flex flex-wrap gap-3">
             <Button
               onClick={() => setIsBulkModalOpen(true)}
-              className="h-12 rounded-2xl bg-[#1f62f7] px-5 text-sm font-semibold text-white hover:bg-[#1a4fd4]"
+              className="h-12 rounded-2xl bg-primary px-5 text-sm font-semibold text-white hover:bg-primary-hover"
             >
               {t('admin.vendors.bulkWhitelistButton')}
             </Button>
             <Button
               onClick={() => setIsAddModalOpen(true)}
-              className="h-12 rounded-2xl bg-[#1f62f7] px-5 text-sm font-semibold text-white hover:bg-[#1a4fd4]"
+              className="h-12 rounded-2xl bg-primary px-5 text-sm font-semibold text-white hover:bg-primary-hover"
             >
               {t('admin.vendors.whitelistButton')}
             </Button>
@@ -403,7 +403,7 @@ export const VendorManagement = () => {
               <Button
                 onClick={handleBulkGrant}
                 disabled={selectedVendorIds.length === 0 || whitelistMutation.isPending}
-                className="rounded-2xl bg-[#1f62f7] px-6 text-white hover:bg-[#1a4fd4]"
+                className="rounded-2xl bg-primary px-6 text-white hover:bg-primary-hover"
               >
                 {t('admin.vendors.bulkWhitelistConfirm')}
               </Button>

@@ -77,7 +77,7 @@ export const CitySelectionPage = () => {
 
         <div className="mt-8 flex flex-wrap items-center justify-center gap-6">
           <div className="flex items-center gap-3 rounded-full bg-blue-50 px-5 py-2 shadow-inner">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1f62f7] font-semibold text-white">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary font-semibold text-white">
               1
             </div>
             <div className="text-left">
@@ -135,7 +135,7 @@ export const CitySelectionPage = () => {
                         <span className="truncate">{city.state ? `${city.name}, ${city.state}` : city.name}</span>
                       </span>
                       <span className="ml-2 flex items-center gap-1">
-                        <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[#1f62f7] px-1 text-xs font-semibold text-white">
+                        <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1 text-xs font-semibold text-white">
                           {pendingCount}
                         </span>
                         {badgeCounts.submitted > 0 && (
@@ -190,7 +190,7 @@ export const CitySelectionPage = () => {
                           <span className="truncate">{city.state ? `${city.name}, ${city.state}` : city.name}</span>
                         </span>
                         <span className="ml-2 flex items-center gap-1">
-                          <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[#1f62f7] px-1 text-xs font-semibold text-white">
+                          <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary px-1 text-xs font-semibold text-white">
                             {pendingCount}
                           </span>
                           {badgeCounts.submitted > 0 && (

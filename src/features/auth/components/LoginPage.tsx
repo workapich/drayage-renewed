@@ -47,7 +47,7 @@ export const LoginPage = () => {
     <div className="min-h-screen bg-app-gradient">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
         <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#1f62f7] shadow-lg shadow-blue-500/30">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary shadow-lg shadow-blue-500/30">
             <svg className="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path
                 strokeLinecap="round"
@@ -71,7 +71,7 @@ export const LoginPage = () => {
         <div className="w-full max-w-md rounded-3xl border border-white/70 bg-white/90 p-8 shadow-[0_35px_65px_rgba(15,23,42,0.12)] backdrop-blur">
           <Card className="border-0 shadow-none">
             <CardHeader className="text-center space-y-3">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#1f62f7] shadow-inner">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary shadow-inner">
                 <Lock className="h-8 w-8 text-white" />
               </div>
               <CardTitle className="text-2xl font-semibold text-slate-900">{t('auth.login.title')}</CardTitle>

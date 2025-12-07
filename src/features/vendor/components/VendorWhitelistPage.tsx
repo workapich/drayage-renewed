@@ -79,7 +79,7 @@ export const VendorWhitelistPage = () => {
           </div>
           <Button
             onClick={() => setIsAddModalOpen(true)}
-            className="h-12 rounded-2xl bg-[#1f62f7] px-5 text-sm font-semibold text-white hover:bg-[#1a4fd4]"
+            className="h-12 rounded-2xl bg-primary px-5 text-sm font-semibold text-white hover:bg-primary-hover"
           >
             {t('vendor.whitelist.whitelistButton')}
           </Button>
