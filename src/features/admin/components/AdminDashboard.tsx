@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Layout } from '@/components/Layout'
 import { RouteCreationModal } from './RouteCreationModal'
-import { getPortCities, getBidCountsByCity } from '@/lib/mock-data'
+import { getPortRampRegions, getBidCountsByPortRampRegion } from '@/lib/mock-data'
 import { useStatisticsQuery } from '@/lib/query-hooks'
 
 export const AdminDashboard = () => {
@@ -14,32 +14,32 @@ export const AdminDashboard = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [isRouteModalOpen, setIsRouteModalOpen] = useState(false)
   const navigate = useNavigate()
-  const cities = getPortCities()
-  const bidCounts = getBidCountsByCity()
+  const portRampRegions = getPortRampRegions()
+  const bidCounts = getBidCountsByPortRampRegion()
   const { data: stats } = useStatisticsQuery()
 
-  const filteredCities = cities.filter((city) =>
-    city.name.toLowerCase().includes(searchQuery.toLowerCase()),
+  const filteredPortRampRegions = portRampRegions.filter((portRampRegion) =>
+    portRampRegion.name.toLowerCase().includes(searchQuery.toLowerCase()),
   )
 
-  const getCityDisplayName = (city: typeof cities[0]) => (city.state ? `${city.name}, ${city.state}` : city.name)
+  const getPortRampRegionDisplayName = (portRampRegion: typeof portRampRegions[0]) => (portRampRegion.state ? `${portRampRegion.name}, ${portRampRegion.state}` : portRampRegion.name)
 
-  const groupedCities = useMemo(() => {
-    const groups: Record<string, typeof filteredCities> = {}
-    filteredCities.forEach((city) => {
-      const firstLetter = city.name.charAt(0).toUpperCase()
+  const groupedPortRampRegions = useMemo(() => {
+    const groups: Record<string, typeof filteredPortRampRegions> = {}
+    filteredPortRampRegions.forEach((portRampRegion) => {
+      const firstLetter = portRampRegion.name.charAt(0).toUpperCase()
       if (!groups[firstLetter]) {
         groups[firstLetter] = []
       }
-      groups[firstLetter].push(city)
+      groups[firstLetter].push(portRampRegion)
     })
     return Object.keys(groups)
       .sort()
       .map((letter) => ({
         letter,
-        cities: groups[letter].sort((a, b) => a.name.localeCompare(b.name)),
+        portRampRegions: groups[letter].sort((a, b) => a.name.localeCompare(b.name)),
       }))
-  }, [filteredCities])
+  }, [filteredPortRampRegions])
 
   return (
     <Layout showLogout subtitle={t('admin.dashboard.title')} fullWidth>
@@ -131,17 +131,17 @@ export const AdminDashboard = () => {
           </div>
 
           <div className="mt-8 space-y-6">
-            {groupedCities.map(({ letter, cities: letterCities }) => (
+            {groupedPortRampRegions.map(({ letter, portRampRegions: letterPortRampRegions }) => (
               <div key={letter}>
                 <h4 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-400">{letter}</h4>
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                  {letterCities.map((city) => {
-                    const bidCount = bidCounts[city.id] || 0
-                    const displayName = getCityDisplayName(city)
+                  {letterPortRampRegions.map((portRampRegion) => {
+                    const bidCount = bidCounts[portRampRegion.id] || 0
+                    const displayName = getPortRampRegionDisplayName(portRampRegion)
                     return (
                       <button
-                        key={city.id}
-                        onClick={() => navigate(`/admin/rates/${city.id}`)}
+                        key={portRampRegion.id}
+                        onClick={() => navigate(`/admin/rates/${portRampRegion.id}`)}
                         className="flex flex-col rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left text-sm font-semibold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-blue-300 hover:bg-blue-50"
                       >
                         <span>{displayName}</span>

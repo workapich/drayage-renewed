@@ -24,10 +24,10 @@ export interface City {
 
 export interface Route {
   id: string
-  portCityId: string
-  inlandCityId: string
-  portCity: City
-  inlandCity: City
+  portRampRegionId: string
+  inlandLocationId: string
+  portRampRegion: City
+  inlandLocation: City
 }
 
 export type VendorStatus = 'active' | 'inactive' | 'blocked'
@@ -59,8 +59,8 @@ export interface Bid {
   vendorId: string
   vendorEmail: string
   routeId: string
-  portCityId: string
-  inlandCityId: string
+  portRampRegionId: string
+  inlandLocationId: string
   baseRate: number
   fsc: number
   total: number

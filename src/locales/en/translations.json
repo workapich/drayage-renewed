@@ -62,7 +62,7 @@
     }
   },
   "vendor": {
-    "cities": {
+    "portRampRegions": {
       "title": "Vendor Portal",
       "pageTitle": "Submit Your Bid",
       "description": "Select the port/ramp region to view inland locations and submit rates.",
@@ -70,11 +70,11 @@
       "step1Description": "Select where the load starts",
       "step2Title": "Choose Inland Location & Input Rates",
       "step2Description": "Complete inland routing",
-      "searchPlaceholder": "Search for a city...",
+      "searchPlaceholder": "Search for a port/ramp region...",
       "favorites": "Favorites"
     },
     "bid": {
-      "backToCities": "Back to Cities",
+      "backToPortRampRegions": "Back to Port/Ramp Regions",
       "portNotFound": "Port location not found.",
       "selectDestination": "Select Inland Location",
       "inlandRoutes": "{{city}} Inland Routes",
@@ -119,7 +119,7 @@
       "heading": "Whitelist Vendors",
       "description": "Invite and manage the vendors you have permission to onboard.",
       "whitelistButton": "Whitelist Vendor Email",
-      "backToCities": "Back to Cities",
+      "backToPortRampRegions": "Back to Port/Ramp Regions",
       "noVendors": "No vendors added by you yet."
     }
   },
@@ -148,9 +148,9 @@
         "description": "Available inland locations currently receiving bids"
       },
       "viewRates": {
-        "label": "Select City",
+        "label": "Select Port/Ramp Region",
         "title": "View Vendor Rates",
-        "searchPlaceholder": "Search for a city...",
+        "searchPlaceholder": "Search for a port/ramp region...",
         "bidsCount": "{{count}} bids"
       }
     },
@@ -200,8 +200,8 @@
     },
     "rates": {
       "title": "Rate Management",
-      "backToCities": "Back to Cities",
-      "cityNotFound": "City not found.",
+      "backToPortRampRegions": "Back to Port/Ramp Regions",
+      "portRampRegionNotFound": "Port/Ramp Region not found.",
       "selectDestination": "Select Inland Location",
       "addButton": "+ Add",
       "noDestinations": "No inland locations yet.",
@@ -233,10 +233,10 @@
     },
     "routeCreation": {
       "title": "Create New Route",
-      "startingCity": "Port/Ramp Region",
-      "startingCityPlaceholder": "Select port/ramp region",
-      "endingCity": "Inland Location",
-      "endingCityPlaceholder": "Select inland location",
+      "portRampRegion": "Port/Ramp Region",
+      "portRampRegionPlaceholder": "Select port/ramp region",
+      "inlandLocation": "Inland Location",
+      "inlandLocationPlaceholder": "Select inland location",
       "createButton": "Create Route",
       "createButtonLoading": "Creating...",
       "success": "Route created successfully.",

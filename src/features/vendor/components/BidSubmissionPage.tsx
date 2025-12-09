@@ -24,7 +24,7 @@ import { Layout } from '@/components/Layout'
 import { getCityById } from '@/lib/mock-data'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import {
-  useBidsByPortQuery,
+  useBidsByPortRampRegionQuery,
   useBidsByRouteQuery,
   useRoutesQuery,
   useSubmitBidMutation,
@@ -54,9 +54,9 @@ const parseNumeric = (value: string) => {
 
 export const BidSubmissionPage = () => {
   const { t } = useTranslation()
-  const { portCityId } = useParams<{ portCityId: string }>()
+  const { portRampRegionId } = useParams<{ portRampRegionId: string }>()
   const { user } = useAuth()
-  const { data: routes = [] } = useRoutesQuery(portCityId)
+  const { data: routes = [] } = useRoutesQuery(portRampRegionId)
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null)
   const [baseRate, setBaseRate] = useState('')
   const [fsc, setFsc] = useState('')
@@ -69,10 +69,10 @@ export const BidSubmissionPage = () => {
   const { data: templates = [] } = useTemplatesQuery(user?.vendorId)
   const saveTemplateMutation = useSaveTemplateMutation()
   const deleteTemplateMutation = useDeleteTemplateMutation()
-  const { data: favoriteCityIds = [] } = useFavoritesQuery(user?.vendorId)
+  const { data: favoritePortRampRegionIds = [] } = useFavoritesQuery(user?.vendorId)
   const toggleFavoriteMutation = useToggleFavoriteMutation()
 
-  const portCity = portCityId ? getCityById(portCityId) : null
+  const portRampRegion = portRampRegionId ? getCityById(portRampRegionId) : null
 
   useEffect(() => {
     if (!selectedRouteId && routes.length > 0) {
@@ -81,7 +81,7 @@ export const BidSubmissionPage = () => {
   }, [routes, selectedRouteId])
 
   const { data: routeBids = [] } = useBidsByRouteQuery(selectedRouteId ?? '')
-  const { data: portBids = [] } = useBidsByPortQuery(portCityId ?? '')
+  const { data: portRampRegionBids = [] } = useBidsByPortRampRegionQuery(portRampRegionId ?? '')
   const selectedRoute = routes.find((route) => route.id === selectedRouteId)
   const vendorBid = routeBids.find((bid) => bid.vendorId === user?.vendorId)
 
@@ -105,17 +105,17 @@ export const BidSubmissionPage = () => {
 
   const routeStatus = useMemo(() => {
     return routes.reduce<Record<string, 'submitted' | 'pending' | 'new'>>((acc, route) => {
-      const bid = portBids.find((item) => item.vendorId === user?.vendorId && item.routeId === route.id)
+      const bid = portRampRegionBids.find((item: { vendorId?: string; routeId: string }) => item.vendorId === user?.vendorId && item.routeId === route.id)
       if (bid?.status === 'submitted') acc[route.id] = 'submitted'
       else if (bid) acc[route.id] = 'pending'
       else acc[route.id] = 'new'
       return acc
     }, {})
-  }, [portBids, routes, user?.vendorId])
+  }, [portRampRegionBids, routes, user?.vendorId])
 
   const hasSubmittedBid = selectedRouteId ? routeStatus[selectedRouteId] === 'submitted' : false
   const submittedBidMessage = hasSubmittedBid && selectedRoute
-    ? t('vendor.bid.ratesSaved', { city: selectedRoute.inlandCity.name, state: selectedRoute.inlandCity.state })
+    ? t('vendor.bid.ratesSaved', { city: selectedRoute.inlandLocation.name, state: selectedRoute.inlandLocation.state })
     : null
 
   const numericBaseRate = parseNumeric(baseRate)
@@ -148,9 +148,9 @@ export const BidSubmissionPage = () => {
     })
   }, [templates, numericAccessorials])
 
-  if (!portCity || !portCityId) {
+  if (!portRampRegion || !portRampRegionId) {
     return (
-      <Layout showBackButton backTo="/vendor/cities" backLabel={t('vendor.bid.backToCities')} showLogout fullWidth>
+      <Layout showBackButton backTo="/vendor/cities" backLabel={t('vendor.bid.backToPortRampRegions')} showLogout fullWidth>
         <div className="rounded-3xl border border-white/70 bg-white/90 p-8 text-center text-lg font-semibold text-slate-700 shadow-[0_40px_80px_rgba(15,23,42,0.1)]">
           {t('vendor.bid.portNotFound')}
         </div>
@@ -158,8 +158,7 @@ export const BidSubmissionPage = () => {
     )
   }
 
-  const accessorialTotal = Object.values(numericAccessorials).reduce((sum, value) => sum + value, 0)
-  const total = numericBaseRate + numericBaseRate * (numericFsc / 100) + accessorialTotal
+  const total = numericBaseRate + numericBaseRate * (numericFsc / 100)
   const canSubmit = Boolean(selectedRoute && user?.vendorId && numericBaseRate > 0 && numericFsc >= 0)
 
   const formatCurrency = (value: number) =>
@@ -218,8 +217,8 @@ export const BidSubmissionPage = () => {
       vendorId: user.vendorId,
       vendorEmail: user.email,
       routeId: selectedRoute.id,
-      portCityId,
-      inlandCityId: selectedRoute.inlandCityId,
+      portRampRegionId,
+      inlandLocationId: selectedRoute.inlandLocationId,
       baseRate: numericBaseRate,
       fsc: numericFsc,
       accessorials: {
@@ -276,16 +275,16 @@ export const BidSubmissionPage = () => {
     <Layout
       showBackButton
       backTo="/vendor/cities"
-      backLabel={t('vendor.bid.backToCities')}
+      backLabel={t('vendor.bid.backToPortRampRegions')}
       showLogout
       fullWidth
-      subtitle={`${portCity.name}, ${portCity.state ?? ''}`.trim()}
+      subtitle={`${portRampRegion.name}, ${portRampRegion.state ?? ''}`.trim()}
     >
       <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
         <div className="rounded-3xl border border-white/70 bg-white/90 shadow-[0_35px_60px_rgba(15,23,42,0.08)]">
           <div className="border-b border-slate-100 px-6 py-5">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">{t('vendor.bid.selectDestination')}</p>
-            <p className="mt-1 text-lg font-semibold text-slate-900">{t('vendor.bid.inlandRoutes', { city: portCity.name })}</p>
+            <p className="mt-1 text-lg font-semibold text-slate-900">{t('vendor.bid.inlandRoutes', { city: portRampRegion.name })}</p>
           </div>
           <div className="mt-4 max-h-[620px] space-y-3 overflow-y-auto px-4 pb-6">
             {routes.length === 0 && (
@@ -310,7 +309,7 @@ export const BidSubmissionPage = () => {
                   ].join(' ')}
                 >
                   <p className="text-base font-semibold">
-                    {route.inlandCity.name}, {route.inlandCity.state}
+                    {route.inlandLocation.name}, {route.inlandLocation.state}
                   </p>
                   {status === 'submitted' && !isSelected && (
                     <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1 text-xs font-semibold text-emerald-600">
@@ -333,16 +332,16 @@ export const BidSubmissionPage = () => {
               <div className="flex items-center gap-2">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">{t('vendor.bid.portLocation')}</p>
-                  <p className="text-2xl font-semibold text-slate-900">{portCity.name.toUpperCase()}</p>
+                  <p className="text-2xl font-semibold text-slate-900">{portRampRegion.name.toUpperCase()}</p>
                 </div>
-                {favoriteCityIds.includes(portCityId) ? (
+                {favoritePortRampRegionIds.includes(portRampRegionId) ? (
                   <button
                     type="button"
-                    aria-label={`Remove ${portCity.name} from favorites`}
+                    aria-label={`Remove ${portRampRegion.name} from favorites`}
                     className="rounded p-1 hover:bg-yellow-50"
                     onClick={() => {
                       if (user?.vendorId) {
-                        toggleFavoriteMutation.mutate({ vendorId: user.vendorId, cityId: portCityId })
+                        toggleFavoriteMutation.mutate({ vendorId: user.vendorId, portRampRegionId })
                       }
                     }}
                   >
@@ -351,11 +350,11 @@ export const BidSubmissionPage = () => {
                 ) : (
                   <button
                     type="button"
-                    aria-label={`Add ${portCity.name} to favorites`}
+                    aria-label={`Add ${portRampRegion.name} to favorites`}
                     className="rounded p-1 hover:bg-yellow-50"
                     onClick={() => {
                       if (user?.vendorId) {
-                        toggleFavoriteMutation.mutate({ vendorId: user.vendorId, cityId: portCityId })
+                        toggleFavoriteMutation.mutate({ vendorId: user.vendorId, portRampRegionId })
                       }
                     }}
                   >

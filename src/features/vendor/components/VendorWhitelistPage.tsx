@@ -62,7 +62,7 @@ export const VendorWhitelistPage = () => {
     <Layout
       showBackButton
       backTo="/vendor/cities"
-      backLabel={t('vendor.whitelist.backToCities')}
+      backLabel={t('vendor.whitelist.backToPortRampRegions')}
       showLogout
       fullWidth
     >

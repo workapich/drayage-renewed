@@ -5,7 +5,7 @@ import { ProtectedRoute } from './components/ProtectedRoute'
 import { LoginPage } from './features/auth/components/LoginPage'
 import { RegisterPage } from './features/auth/components/RegisterPage'
 import { EmailConfirmationPage } from './features/auth/components/EmailConfirmationPage'
-import { CitySelectionPage } from './features/vendor/components/CitySelectionPage'
+import { PortRampRegionSelectionPage } from './features/vendor/components/PortRampRegionSelectionPage'
 import { BidSubmissionPage } from './features/vendor/components/BidSubmissionPage'
 import { VendorWhitelistPage } from './features/vendor/components/VendorWhitelistPage'
 import { AdminDashboard } from './features/admin/components/AdminDashboard'
@@ -36,12 +36,12 @@ function App() {
               path="/vendor/cities"
               element={
                 <ProtectedRoute requiredRole="vendor">
-                  <CitySelectionPage />
+                  <PortRampRegionSelectionPage />
                 </ProtectedRoute>
               }
             />
             <Route
-              path="/vendor/bid/:portCityId"
+              path="/vendor/bid/:portRampRegionId"
               element={
                 <ProtectedRoute requiredRole="vendor">
                   <BidSubmissionPage />
@@ -75,7 +75,7 @@ function App() {
               }
             />
             <Route
-              path="/admin/rates/:portCityId"
+              path="/admin/rates/:portRampRegionId"
               element={
                 <ProtectedRoute requiredRole="admin">
                   <RateManagement />

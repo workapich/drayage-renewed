@@ -1,7 +1,7 @@
 import { City, Vendor, Bid, Route, Statistics } from '@/types'
 
 // Port Locations (from picture 1)
-const portCities: City[] = [
+const portRampRegions: City[] = [
   { id: 'atl', name: 'Atlanta', state: 'GA', isPort: true, isInland: false },
   { id: 'bal', name: 'Baltimore', state: 'MD', isPort: true, isInland: false },
   { id: 'bos', name: 'Boston', state: 'MA', isPort: true, isInland: false },
@@ -42,7 +42,7 @@ const portCities: City[] = [
 ]
 
 // Inland Locations (from picture 2)
-const inlandCities: City[] = [
+const inlandLocations: City[] = [
   { id: 'abbeville-sc', name: 'Abbeville', state: 'SC', isPort: false, isInland: true },
   { id: 'appling-ga', name: 'Appling', state: 'GA', isPort: false, isInland: true },
   { id: 'augusta-ga', name: 'Augusta', state: 'GA', isPort: false, isInland: true },
@@ -191,7 +191,7 @@ const inlandCities: City[] = [
   { id: 'richmond-bc-canada', name: 'Richmond', state: 'BC', country: 'Canada', isPort: false, isInland: true },
 ]
 
-export const cities: City[] = [...portCities, ...inlandCities]
+export const cities: City[] = [...portRampRegions, ...inlandLocations]
 
 export const vendors: Vendor[] = [
   {
@@ -271,15 +271,15 @@ export const vendors: Vendor[] = [
 
 // Generate routes for Atlanta port
 const atlantaRoutes: Route[] = (() => {
-  const atlCity = cities.find(c => c.id === 'atl')!
-  const abbevilleCity = cities.find(c => c.id === 'abbeville-sc')!
-  const augustaCity = cities.find(c => c.id === 'augusta-ga')!
-  const poolerCity = cities.find(c => c.id === 'pooler-ga')!
+  const atlPortRampRegion = cities.find(c => c.id === 'atl')!
+  const abbevilleInlandLocation = cities.find(c => c.id === 'abbeville-sc')!
+  const augustaInlandLocation = cities.find(c => c.id === 'augusta-ga')!
+  const poolerInlandLocation = cities.find(c => c.id === 'pooler-ga')!
   
   return [
-    { id: 'r1', portCityId: 'atl', inlandCityId: 'abbeville-sc', portCity: atlCity, inlandCity: abbevilleCity },
-    { id: 'r2', portCityId: 'atl', inlandCityId: 'augusta-ga', portCity: atlCity, inlandCity: augustaCity },
-    { id: 'r3', portCityId: 'atl', inlandCityId: 'pooler-ga', portCity: atlCity, inlandCity: poolerCity },
+    { id: 'r1', portRampRegionId: 'atl', inlandLocationId: 'abbeville-sc', portRampRegion: atlPortRampRegion, inlandLocation: abbevilleInlandLocation },
+    { id: 'r2', portRampRegionId: 'atl', inlandLocationId: 'augusta-ga', portRampRegion: atlPortRampRegion, inlandLocation: augustaInlandLocation },
+    { id: 'r3', portRampRegionId: 'atl', inlandLocationId: 'pooler-ga', portRampRegion: atlPortRampRegion, inlandLocation: poolerInlandLocation },
   ]
 })()
 
@@ -301,8 +301,8 @@ const generateBids = (): Bid[] => {
         vendorId: vendor.id,
         vendorEmail: vendor.email,
         routeId: route.id,
-        portCityId: route.portCityId,
-        inlandCityId: route.inlandCityId,
+        portRampRegionId: route.portRampRegionId,
+        inlandLocationId: route.inlandLocationId,
         baseRate,
         fsc,
         total,
@@ -341,41 +341,41 @@ export const getCityById = (id: string): City | undefined => {
   return cities.find(c => c.id === id)
 }
 
-export const getPortCities = (): City[] => {
+export const getPortRampRegions = (): City[] => {
   return cities.filter(c => c.isPort)
 }
 
-export const getInlandCitiesForPort = (portCityId: string): City[] => {
-  const routeIds = routes.filter(r => r.portCityId === portCityId).map(r => r.inlandCityId)
+export const getInlandLocationsForPortRampRegion = (portRampRegionId: string): City[] => {
+  const routeIds = routes.filter(r => r.portRampRegionId === portRampRegionId).map(r => r.inlandLocationId)
   return cities.filter(c => routeIds.includes(c.id))
 }
 
-export const getRoutesForPort = (portCityId: string): Route[] => {
-  return routes.filter(r => r.portCityId === portCityId)
+export const getRoutesForPortRampRegion = (portRampRegionId: string): Route[] => {
+  return routes.filter(r => r.portRampRegionId === portRampRegionId)
 }
 
 export const getBidsForRoute = (routeId: string): Bid[] => {
   return bids.filter(b => b.routeId === routeId)
 }
 
-export const getBidsForPort = (portCityId: string): Bid[] => {
-  return bids.filter(b => b.portCityId === portCityId)
+export const getBidsForPortRampRegion = (portRampRegionId: string): Bid[] => {
+  return bids.filter(b => b.portRampRegionId === portRampRegionId)
 }
 
-export const getBidCountsByCity = (): Record<string, number> => {
+export const getBidCountsByPortRampRegion = (): Record<string, number> => {
   // Mock data matching the screenshots
   const counts: Record<string, number> = {}
-  portCities.forEach(city => {
-    counts[city.id] = Math.floor(Math.random() * 70) + 10
+  portRampRegions.forEach(portRampRegion => {
+    counts[portRampRegion.id] = Math.floor(Math.random() * 70) + 10
   })
   return counts
 }
 
-export const getPendingBidCountsByCity = (vendorId: string): Record<string, number> => {
+export const getPendingBidCountsByPortRampRegion = (vendorId: string): Record<string, number> => {
   const counts: Record<string, number> = {}
-  cities.filter(c => c.isPort).forEach(city => {
-    const cityBids = getBidsForPort(city.id).filter(b => b.vendorId === vendorId)
-    counts[city.id] = cityBids.filter(b => b.status === 'pending').length
+  cities.filter(c => c.isPort).forEach(portRampRegion => {
+    const portRampRegionBids = getBidsForPortRampRegion(portRampRegion.id).filter(b => b.vendorId === vendorId)
+    counts[portRampRegion.id] = portRampRegionBids.filter(b => b.status === 'pending').length
   })
   // Mock: Return some pending counts for demo
   return {
@@ -394,11 +394,11 @@ export const getPendingBidCountsByCity = (vendorId: string): Record<string, numb
   }
 }
 
-export const getSubmittedBidCountsByCity = (vendorId: string): Record<string, number> => {
+export const getSubmittedBidCountsByPortRampRegion = (vendorId: string): Record<string, number> => {
   const counts: Record<string, number> = {}
-  cities.filter(c => c.isPort).forEach(city => {
-    const cityBids = getBidsForPort(city.id).filter(b => b.vendorId === vendorId)
-    counts[city.id] = cityBids.filter(b => b.status === 'submitted').length
+  cities.filter(c => c.isPort).forEach(portRampRegion => {
+    const portRampRegionBids = getBidsForPortRampRegion(portRampRegion.id).filter(b => b.vendorId === vendorId)
+    counts[portRampRegion.id] = portRampRegionBids.filter(b => b.status === 'submitted').length
   })
   // Mock: Return some submitted counts for demo
   return {

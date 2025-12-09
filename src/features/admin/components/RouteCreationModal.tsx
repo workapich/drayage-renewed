@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Combobox } from '@/components/ui/combobox'
-import { getPortCities, cities } from '@/lib/mock-data'
+import { getPortRampRegions, cities } from '@/lib/mock-data'
 import { useCreateRouteMutation } from '@/lib/query-hooks'
 
 interface RouteCreationModalProps {
@@ -20,42 +20,42 @@ interface RouteCreationModalProps {
 
 export const RouteCreationModal = ({ open, onOpenChange, defaultPortId }: RouteCreationModalProps) => {
   const { t } = useTranslation()
-  const [startingCity, setStartingCity] = useState<string>(defaultPortId ?? '')
-  const [endingCity, setEndingCity] = useState<string>('')
+  const [startingPortRampRegion, setStartingPortRampRegion] = useState<string>(defaultPortId ?? '')
+  const [endingInlandLocation, setEndingInlandLocation] = useState<string>('')
   const [feedback, setFeedback] = useState<string | null>(null)
-  const portCities = getPortCities()
-  const availableInlandCities = cities.filter((c) => c.isInland)
+  const portRampRegions = getPortRampRegions()
+  const availableInlandLocations = cities.filter((c) => c.isInland)
   const createRouteMutation = useCreateRouteMutation()
 
-  const portCityOptions = portCities.map((city) => ({
-    value: city.id,
-    label: `${city.name}, ${city.state ?? ''}`.trim(),
+  const portRampRegionOptions = portRampRegions.map((portRampRegion) => ({
+    value: portRampRegion.id,
+    label: `${portRampRegion.name}, ${portRampRegion.state ?? ''}`.trim(),
   }))
 
-  const inlandCityOptions = availableInlandCities.map((city) => ({
-    value: city.id,
-    label: `${city.name}, ${city.state ?? ''}`.trim(),
+  const inlandLocationOptions = availableInlandLocations.map((inlandLocation) => ({
+    value: inlandLocation.id,
+    label: `${inlandLocation.name}, ${inlandLocation.state ?? ''}`.trim(),
   }))
 
   useEffect(() => {
     if (defaultPortId) {
-      setStartingCity(defaultPortId)
+      setStartingPortRampRegion(defaultPortId)
     }
   }, [defaultPortId, open])
 
   const closeModal = () => {
     onOpenChange(false)
     setFeedback(null)
-    setEndingCity('')
+    setEndingInlandLocation('')
     if (!defaultPortId) {
-      setStartingCity('')
+      setStartingPortRampRegion('')
     }
   }
 
   const handleCreate = async () => {
-    if (!startingCity || !endingCity) return
+    if (!startingPortRampRegion || !endingInlandLocation) return
     try {
-      await createRouteMutation.mutateAsync({ portCityId: startingCity, inlandCityId: endingCity })
+      await createRouteMutation.mutateAsync({ portRampRegionId: startingPortRampRegion, inlandLocationId: endingInlandLocation })
       setFeedback(t('admin.routeCreation.success'))
       setTimeout(() => {
         closeModal()
@@ -83,27 +83,27 @@ export const RouteCreationModal = ({ open, onOpenChange, defaultPortId }: RouteC
           {!defaultPortId && (
             <div className="space-y-2">
               <label htmlFor="starting-city" className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
-                {t('admin.routeCreation.startingCity')}
+                {t('admin.routeCreation.portRampRegion')}
               </label>
               <Combobox
-                options={portCityOptions}
-                value={startingCity}
-                onChange={setStartingCity}
-                placeholder={t('admin.routeCreation.startingCityPlaceholder')}
+                options={portRampRegionOptions}
+                value={startingPortRampRegion}
+                onChange={setStartingPortRampRegion}
+                placeholder={t('admin.routeCreation.portRampRegionPlaceholder')}
                 className="h-12 rounded-2xl border-slate-200"
               />
             </div>
           )}
 
           <div className="space-y-2">
-            <label htmlFor="ending-city" className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
-              {t('admin.routeCreation.endingCity')}
+            <label htmlFor="ending-inland-location" className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">
+              {t('admin.routeCreation.inlandLocation')}
             </label>
             <Combobox
-              options={inlandCityOptions}
-              value={endingCity}
-              onChange={setEndingCity}
-              placeholder={t('admin.routeCreation.endingCityPlaceholder')}
+              options={inlandLocationOptions}
+              value={endingInlandLocation}
+              onChange={setEndingInlandLocation}
+              placeholder={t('admin.routeCreation.inlandLocationPlaceholder')}
               className="h-12 rounded-2xl border-slate-200"
             />
           </div>
@@ -120,7 +120,7 @@ export const RouteCreationModal = ({ open, onOpenChange, defaultPortId }: RouteC
           </Button>
           <Button
             onClick={handleCreate}
-            disabled={!startingCity || !endingCity || createRouteMutation.isPending}
+            disabled={!startingPortRampRegion || !endingInlandLocation || createRouteMutation.isPending}
             className="rounded-2xl bg-primary px-6 text-white hover:bg-primary-hover"
           >
             {createRouteMutation.isPending ? t('admin.routeCreation.createButtonLoading') : t('admin.routeCreation.createButton')}

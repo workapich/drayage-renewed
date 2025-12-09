@@ -15,21 +15,21 @@ import {
 import { Layout } from '@/components/Layout'
 import { getCityById } from '@/lib/mock-data'
 import { RouteCreationModal } from './RouteCreationModal'
-import { useBidsByPortQuery, useBidsByRouteQuery, useRoutesQuery } from '@/lib/query-hooks'
+import { useBidsByPortRampRegionQuery, useBidsByRouteQuery, useRoutesQuery } from '@/lib/query-hooks'
 
 export const RateManagement = () => {
   const { t } = useTranslation()
-  const { portCityId } = useParams<{ portCityId: string }>()
+  const { portRampRegionId } = useParams<{ portRampRegionId: string }>()
   const [selectedDestinationId, setSelectedDestinationId] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [isRouteModalOpen, setIsRouteModalOpen] = useState(false)
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const [expandedBids, setExpandedBids] = useState<Set<string>>(new Set())
-  const { data: routes = [] } = useRoutesQuery(portCityId)
-  const { data: allPortBids = [] } = useBidsByPortQuery(portCityId ?? '')
+  const { data: routes = [] } = useRoutesQuery(portRampRegionId)
+  const { data: allPortRampRegionBids = [] } = useBidsByPortRampRegionQuery(portRampRegionId ?? '')
   const { data: bids = [] } = useBidsByRouteQuery(selectedDestinationId ?? '')
 
-  const portCity = portCityId ? getCityById(portCityId) : null
+  const portRampRegion = portRampRegionId ? getCityById(portRampRegionId) : null
 
   useEffect(() => {
     if (!selectedDestinationId && routes.length > 0) {
@@ -54,11 +54,11 @@ export const RateManagement = () => {
     })
   }, [bids, sortOrder])
 
-  if (!portCity) {
+  if (!portRampRegion) {
     return (
-      <Layout showBackButton backTo="/admin/dashboard" backLabel={t('admin.rates.backToCities')} showLogout fullWidth>
+      <Layout showBackButton backTo="/admin/dashboard" backLabel={t('admin.rates.backToPortRampRegions')} showLogout fullWidth>
         <div className="rounded-3xl border border-white/70 bg-white/95 p-8 text-center text-lg text-slate-600 shadow">
-          {t('admin.rates.cityNotFound')}
+          {t('admin.rates.portRampRegionNotFound')}
         </div>
       </Layout>
     )
@@ -102,10 +102,10 @@ export const RateManagement = () => {
     <Layout
       showBackButton
       backTo="/admin/dashboard"
-      backLabel={t('admin.rates.backToCities')}
+      backLabel={t('admin.rates.backToPortRampRegions')}
       showLogout
       fullWidth
-      subtitle={`${portCity.name} · ${t('admin.rates.title')}`}
+      subtitle={`${portRampRegion.name} · ${t('admin.rates.title')}`}
     >
       <section className="mx-auto grid w-full max-w-6xl gap-6 lg:grid-cols-[320px_1fr]">
         <div className="rounded-[28px] border border-white/70 bg-white/95 p-6 shadow-[0_30px_70px_rgba(15,23,42,0.08)]">
@@ -127,7 +127,7 @@ export const RateManagement = () => {
               </div>
             )}
             {routes.map((route) => {
-              const count = allPortBids.filter((bid) => bid.routeId === route.id).length
+              const count = allPortRampRegionBids.filter((bid) => bid.routeId === route.id).length
               const isSelected = route.id === selectedDestinationId
               return (
                 <button
@@ -143,7 +143,7 @@ export const RateManagement = () => {
                   }`}
                 >
                   <p className="text-base font-semibold">
-                    {route.inlandCity.name}, {route.inlandCity.state}
+                    {route.inlandLocation.name}, {route.inlandLocation.state}
                   </p>
                   <p className="mt-2 text-xs font-semibold text-slate-500">{t('admin.rates.ratesCount', { count })}</p>
                 </button>
@@ -157,7 +157,7 @@ export const RateManagement = () => {
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-400">{t('admin.rates.viewingRates')}</p>
               <h2 className="mt-2 text-2xl font-semibold text-slate-900">
-                {t('admin.rates.routeTitle', { port: portCity.name, destination: selectedRoute?.inlandCity.name })}
+                {t('admin.rates.routeTitle', { port: portRampRegion.name, destination: selectedRoute?.inlandLocation.name })}
               </h2>
             </div>
             <div className="relative w-full max-w-xs">
@@ -223,7 +223,7 @@ export const RateManagement = () => {
                         </TableCell>
                         <TableCell className="text-slate-600">{bid.vendorEmail}</TableCell>
                         <TableCell className="text-slate-600">
-                          {selectedRoute?.inlandCity.name}, {selectedRoute?.inlandCity.state}
+                          {selectedRoute?.inlandLocation.name}, {selectedRoute?.inlandLocation.state}
                         </TableCell>
                         <TableCell className="text-slate-500">{formatDate(bid.submittedAt)}</TableCell>
                         <TableCell className="font-semibold text-slate-900">{formatCurrency(bid.baseRate)}</TableCell>
@@ -272,7 +272,7 @@ export const RateManagement = () => {
       <RouteCreationModal
         open={isRouteModalOpen}
         onOpenChange={setIsRouteModalOpen}
-        defaultPortId={portCityId}
+        defaultPortId={portRampRegionId}
       />
     </Layout>
   )

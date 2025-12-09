@@ -2,16 +2,13 @@ import { getCityById } from '@/lib/mock-data'
 import { storage } from '@/lib/storage'
 import type { AccessorialFees, AccessorialTemplate, Bid, Route, Vendor, VendorStatus } from '@/types'
 
-const sumAccessorials = (fees: AccessorialFees) =>
-  Object.values(fees).reduce((total, value) => total + (Number.isFinite(value) ? value : 0), 0)
-
 export const dataService = {
   submitBid({
     vendorId,
     vendorEmail,
     routeId,
-    portCityId,
-    inlandCityId,
+    portRampRegionId,
+    inlandLocationId,
     baseRate,
     fsc,
     accessorials,
@@ -20,8 +17,8 @@ export const dataService = {
     vendorId: string
     vendorEmail: string
     routeId: string
-    portCityId: string
-    inlandCityId: string
+    portRampRegionId: string
+    inlandLocationId: string
     baseRate: number
     fsc: number
     accessorials: AccessorialFees
@@ -29,8 +26,7 @@ export const dataService = {
   }): Bid {
     const normalizedBase = Math.max(0, baseRate)
     const normalizedFsc = Math.max(0, fsc)
-    const totalAccessorials = sumAccessorials(accessorials)
-    const total = Math.round((normalizedBase * (1 + normalizedFsc / 100) + totalAccessorials) * 100) / 100
+    const total = Math.round((normalizedBase * (1 + normalizedFsc / 100)) * 100) / 100
 
     const existingBid = storage
       .getBidsByRoute(routeId)
@@ -41,8 +37,8 @@ export const dataService = {
       vendorId,
       vendorEmail,
       routeId,
-      portCityId,
-      inlandCityId,
+      portRampRegionId,
+      inlandLocationId,
       baseRate: normalizedBase,
       fsc: normalizedFsc,
       total,
@@ -54,20 +50,20 @@ export const dataService = {
     return storage.upsertBid(bid)
   },
 
-  createRoute(portCityId: string, inlandCityId: string): Route {
-    return storage.addRoute(portCityId, inlandCityId, () => {
-      const portCity = getCityById(portCityId)
-      const inlandCity = getCityById(inlandCityId)
-      if (!portCity || !inlandCity) {
+  createRoute(portRampRegionId: string, inlandLocationId: string): Route {
+    return storage.addRoute(portRampRegionId, inlandLocationId, () => {
+      const portRampRegion = getCityById(portRampRegionId)
+      const inlandLocation = getCityById(inlandLocationId)
+      if (!portRampRegion || !inlandLocation) {
         throw new Error('Invalid route selection.')
       }
 
       return {
-        id: `route-${portCityId}-${inlandCityId}`,
-        portCityId,
-        inlandCityId,
-        portCity,
-        inlandCity,
+        id: `route-${portRampRegionId}-${inlandLocationId}`,
+        portRampRegionId,
+        inlandLocationId,
+        portRampRegion,
+        inlandLocation,
       }
     })
   },
@@ -139,11 +135,11 @@ export const dataService = {
     storage.deleteTemplate(vendorId, templateId)
   },
 
-  toggleFavorite(vendorId: string, cityId: string): boolean {
-    if (!vendorId || !cityId) {
-      throw new Error('Vendor ID and City ID are required')
+  toggleFavorite(vendorId: string, portRampRegionId: string): boolean {
+    if (!vendorId || !portRampRegionId) {
+      throw new Error('Vendor ID and Port/Ramp Region ID are required')
     }
-    return storage.toggleFavorite(vendorId, cityId)
+    return storage.toggleFavorite(vendorId, portRampRegionId)
   },
 }
 

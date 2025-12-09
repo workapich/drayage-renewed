@@ -5,8 +5,8 @@ import type { AccessorialFees, VendorStatus } from '@/types'
 
 export const queryKeys = {
   vendors: ['vendors'] as const,
-  routes: (portCityId?: string) => ['routes', portCityId ?? 'all'] as const,
-  bidsByPort: (portCityId: string) => ['bids', 'port', portCityId] as const,
+  routes: (portRampRegionId?: string) => ['routes', portRampRegionId ?? 'all'] as const,
+  bidsByPortRampRegion: (portRampRegionId: string) => ['bids', 'portRampRegion', portRampRegionId] as const,
   bidsByRoute: (routeId: string) => ['bids', 'route', routeId] as const,
   statistics: ['statistics'] as const,
   vendorCounts: (vendorId: string) => ['vendor-counts', vendorId] as const,
@@ -20,10 +20,10 @@ export const useVendorsQuery = () =>
     queryFn: async () => storage.getVendors(),
   })
 
-export const useRoutesQuery = (portCityId?: string) =>
+export const useRoutesQuery = (portRampRegionId?: string) =>
   useQuery({
-    queryKey: queryKeys.routes(portCityId),
-    queryFn: async () => (portCityId ? storage.getRoutesByPort(portCityId) : storage.getRoutes()),
+    queryKey: queryKeys.routes(portRampRegionId),
+    queryFn: async () => (portRampRegionId ? storage.getRoutesByPortRampRegion(portRampRegionId) : storage.getRoutes()),
   })
 
 export const useBidsByRouteQuery = (routeId: string) =>
@@ -33,11 +33,11 @@ export const useBidsByRouteQuery = (routeId: string) =>
     enabled: Boolean(routeId),
   })
 
-export const useBidsByPortQuery = (portCityId: string) =>
+export const useBidsByPortRampRegionQuery = (portRampRegionId: string) =>
   useQuery({
-    queryKey: queryKeys.bidsByPort(portCityId),
-    queryFn: async () => storage.getBidsByPort(portCityId),
-    enabled: Boolean(portCityId),
+    queryKey: queryKeys.bidsByPortRampRegion(portRampRegionId),
+    queryFn: async () => storage.getBidsByPortRampRegion(portRampRegionId),
+    enabled: Boolean(portRampRegionId),
   })
 
 export const useStatisticsQuery = () =>
@@ -60,15 +60,15 @@ export const useSubmitBidMutation = () => {
       vendorId: string
       vendorEmail: string
       routeId: string
-      portCityId: string
-      inlandCityId: string
+      portRampRegionId: string
+      inlandLocationId: string
       baseRate: number
       fsc: number
       accessorials: AccessorialFees
     }) => dataService.submitBid(payload),
     onSuccess: (bid) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.bidsByRoute(bid.routeId) })
-      queryClient.invalidateQueries({ queryKey: queryKeys.bidsByPort(bid.portCityId) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.bidsByPortRampRegion(bid.portRampRegionId) })
       queryClient.invalidateQueries({ queryKey: queryKeys.vendorCounts(bid.vendorId) })
       queryClient.invalidateQueries({ queryKey: queryKeys.vendors })
     },
@@ -78,10 +78,10 @@ export const useSubmitBidMutation = () => {
 export const useCreateRouteMutation = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async ({ portCityId, inlandCityId }: { portCityId: string; inlandCityId: string }) =>
-      dataService.createRoute(portCityId, inlandCityId),
+    mutationFn: async ({ portRampRegionId, inlandLocationId }: { portRampRegionId: string; inlandLocationId: string }) =>
+      dataService.createRoute(portRampRegionId, inlandLocationId),
     onSuccess: (route) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.routes(route.portCityId) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.routes(route.portRampRegionId) })
     },
   })
 }
@@ -179,9 +179,9 @@ export const useFavoritesQuery = (vendorId?: string) =>
 export const useToggleFavoriteMutation = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async ({ vendorId, cityId }: { vendorId: string; cityId: string }) => {
-      const isFavorite = dataService.toggleFavorite(vendorId, cityId)
-      return { vendorId, cityId, isFavorite }
+    mutationFn: async ({ vendorId, portRampRegionId }: { vendorId: string; portRampRegionId: string }) => {
+      const isFavorite = dataService.toggleFavorite(vendorId, portRampRegionId)
+      return { vendorId, portRampRegionId, isFavorite }
     },
     onSuccess: ({ vendorId }) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.favorites(vendorId) })

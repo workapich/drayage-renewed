@@ -17,7 +17,7 @@ type Database = {
   accounts: Account[]
   pendingRegistrations: PendingRegistration[]
   templates: AccessorialTemplate[]
-  favorites: { vendorId: string; cityId: string }[]
+  favorites: { vendorId: string; portRampRegionId: string }[]
 }
 
 const seedAccounts: Account[] = [
@@ -146,17 +146,17 @@ export const storage = {
   getRoutes(): Route[] {
     return readDatabase().routes
   },
-  getRoutesByPort(portCityId: string) {
-    return readDatabase().routes.filter((route) => route.portCityId === portCityId)
+  getRoutesByPortRampRegion(portRampRegionId: string) {
+    return readDatabase().routes.filter((route) => route.portRampRegionId === portRampRegionId)
   },
-  addRoute(portCityId: string, inlandCityId: string, routeBuilder: () => Route) {
+  addRoute(portRampRegionId: string, inlandLocationId: string, routeBuilder: () => Route) {
     return mutateDb((db) => {
       const exists = db.routes.some(
-        (route) => route.portCityId === portCityId && route.inlandCityId === inlandCityId,
+        (route) => route.portRampRegionId === portRampRegionId && route.inlandLocationId === inlandLocationId,
       )
       if (exists) {
         return db.routes.find(
-          (route) => route.portCityId === portCityId && route.inlandCityId === inlandCityId,
+          (route) => route.portRampRegionId === portRampRegionId && route.inlandLocationId === inlandLocationId,
         )!
       }
       const newRoute = routeBuilder()
@@ -167,8 +167,8 @@ export const storage = {
   getBids(): Bid[] {
     return readDatabase().bids
   },
-  getBidsByPort(portCityId: string) {
-    return readDatabase().bids.filter((bid) => bid.portCityId === portCityId)
+  getBidsByPortRampRegion(portRampRegionId: string) {
+    return readDatabase().bids.filter((bid) => bid.portRampRegionId === portRampRegionId)
   },
   getBidsByRoute(routeId: string) {
     return readDatabase().bids.filter((bid) => bid.routeId === routeId)
@@ -236,13 +236,13 @@ export const storage = {
     const counts: Record<string, { submitted: number; pending: number }> = {}
     const bids = this.getBidsForVendor(vendorId)
     bids.forEach((bid) => {
-      if (!counts[bid.portCityId]) {
-        counts[bid.portCityId] = { submitted: 0, pending: 0 }
+      if (!counts[bid.portRampRegionId]) {
+        counts[bid.portRampRegionId] = { submitted: 0, pending: 0 }
       }
       if (bid.status === 'submitted') {
-        counts[bid.portCityId].submitted += 1
+        counts[bid.portRampRegionId].submitted += 1
       } else {
-        counts[bid.portCityId].pending += 1
+        counts[bid.portRampRegionId].pending += 1
       }
     })
     return counts
@@ -276,23 +276,23 @@ export const storage = {
     if (!vendorId) return []
     return readDatabase()
       .favorites.filter((f) => f.vendorId === vendorId)
-      .map((f) => f.cityId)
+      .map((f) => f.portRampRegionId)
   },
-  toggleFavorite(vendorId: string, cityId: string): boolean {
+  toggleFavorite(vendorId: string, portRampRegionId: string): boolean {
     return mutateDb((db) => {
-      const existing = db.favorites.find((f) => f.vendorId === vendorId && f.cityId === cityId)
+      const existing = db.favorites.find((f) => f.vendorId === vendorId && f.portRampRegionId === portRampRegionId)
       if (existing) {
-        db.favorites = db.favorites.filter((f) => !(f.vendorId === vendorId && f.cityId === cityId))
+        db.favorites = db.favorites.filter((f) => !(f.vendorId === vendorId && f.portRampRegionId === portRampRegionId))
         return false // Removed from favorites
       } else {
-        db.favorites.push({ vendorId, cityId })
+        db.favorites.push({ vendorId, portRampRegionId })
         return true // Added to favorites
       }
     })
   },
-  isFavorite(vendorId: string, cityId: string): boolean {
-    if (!vendorId || !cityId) return false
-    return readDatabase().favorites.some((f) => f.vendorId === vendorId && f.cityId === cityId)
+  isFavorite(vendorId: string, portRampRegionId: string): boolean {
+    if (!vendorId || !portRampRegionId) return false
+    return readDatabase().favorites.some((f) => f.vendorId === vendorId && f.portRampRegionId === portRampRegionId)
   },
 }
 
