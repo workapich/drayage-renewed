@@ -104,13 +104,19 @@
       "submitButtonLoading": "Submitting…",
       "accessorialLabels": {
         "chassis": "Chassis",
-        "yardStorage": "Yard Storage",
-        "hazmat": "Hazmat",
-        "bond": "Bond",
-        "split": "Split",
-        "flip": "Flip",
+        "chassisDaysMin": "Chassis Days Min",
+        "chassisSplit": "Chassis Split",
+        "triAxle": "Tri-Axle",
+        "storage": "Storage",
+        "prepull": "Prepull",
+        "detentionHoursFree": "Detention Hours Free",
+        "detentionPerHour": "Detention Per Hour",
         "overweight": "Overweight",
-        "prepull": "Prepull"
+        "hazmat": "Hazmat",
+        "drop": "Drop",
+        "layover": "Layover",
+        "bond": "Bond",
+        "stopOff": "Stop-Off"
       }
     },
     "whitelist": {

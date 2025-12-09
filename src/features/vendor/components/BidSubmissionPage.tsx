@@ -34,22 +34,19 @@ import {
   useFavoritesQuery,
   useToggleFavoriteMutation,
 } from '@/lib/query-hooks'
+import { accessorials as accessorialDefinitions, createEmptyAccessorialStrings } from '@/lib/accessorials'
+import { AccessorialFees } from '@/types'
 
-const emptyAccessorials = {
-  chassis: '',
-  yardStorage: '',
-  hazmat: '',
-  bond: '',
-  split: '',
-  flip: '',
-  overweight: '',
-  prepull: '',
-}
-
-const parseNumeric = (value: string) => {
+const parseCurrency = (value: string) => {
   if (!value) return 0
   const cleaned = value.replace(/[^0-9.]/g, '')
   return Number(cleaned) || 0
+}
+
+const parseQuantity = (value: string) => {
+  if (!value) return 0
+  const cleaned = value.replace(/[^0-9]/g, '')
+  return Number.parseInt(cleaned, 10) || 0
 }
 
 export const BidSubmissionPage = () => {
@@ -60,7 +57,9 @@ export const BidSubmissionPage = () => {
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null)
   const [baseRate, setBaseRate] = useState('')
   const [fsc, setFsc] = useState('')
-  const [accessorials, setAccessorials] = useState<Record<string, string>>(emptyAccessorials)
+  const [accessorials, setAccessorials] = useState<Record<keyof AccessorialFees, string>>(
+    createEmptyAccessorialStrings(),
+  )
   const [isSaveTemplateDialogOpen, setIsSaveTemplateDialogOpen] = useState(false)
   const [templateName, setTemplateName] = useState('')
   const [pendingSubmit, setPendingSubmit] = useState(false)
@@ -90,15 +89,16 @@ export const BidSubmissionPage = () => {
       setBaseRate(vendorBid.baseRate ? vendorBid.baseRate.toString() : '')
       setFsc(vendorBid.fsc ? vendorBid.fsc.toString() : '')
       setAccessorials(
-        Object.entries(vendorBid.accessorials).reduce<Record<string, string>>((acc, [key, value]) => {
-          acc[key] = value ? value.toString() : ''
+        accessorialDefinitions.reduce<Record<keyof AccessorialFees, string>>((acc, item) => {
+          const value = vendorBid.accessorials[item.key] ?? 0
+          acc[item.key] = value ? (item.kind === 'quantity' ? Math.round(value).toString() : value.toString()) : ''
           return acc
-        }, {}),
+        }, {} as Record<keyof AccessorialFees, string>),
       )
     } else {
       setBaseRate('')
       setFsc('')
-      setAccessorials(emptyAccessorials)
+      setAccessorials(createEmptyAccessorialStrings())
     }
   }, [vendorBid])
 
@@ -118,29 +118,31 @@ export const BidSubmissionPage = () => {
     ? t('vendor.bid.ratesSaved', { city: selectedRoute.inlandLocation.name, state: selectedRoute.inlandLocation.state })
     : null
 
-  const numericBaseRate = parseNumeric(baseRate)
-  const numericFsc = parseNumeric(fsc)
-  const numericAccessorials = Object.entries(accessorials).reduce<Record<string, number>>(
-    (acc, [key, value]) => {
-      acc[key] = parseNumeric(value)
-      return acc
-    },
-    {},
+  const numericBaseRate = parseCurrency(baseRate)
+  const numericFsc = parseCurrency(fsc)
+  const numericAccessorials = useMemo(
+    () =>
+      accessorialDefinitions.reduce<AccessorialFees>((acc, item) => {
+        const value = accessorials[item.key] ?? ''
+        acc[item.key] = item.kind === 'quantity' ? parseQuantity(value) : parseCurrency(value)
+        return acc
+      }, {} as AccessorialFees),
+    [accessorials],
   )
 
   const accessorialsChanged = useMemo(() => {
     if (!vendorBid) return false
     const submittedAccessorials = vendorBid.accessorials
-    return Object.keys(emptyAccessorials).some((key) => {
+    return accessorialDefinitions.some(({ key }) => {
       const current = numericAccessorials[key] || 0
-      const submitted = submittedAccessorials[key as keyof typeof submittedAccessorials] || 0
+      const submitted = submittedAccessorials[key] || 0
       return Math.abs(current - submitted) > 0.01 // Account for floating point precision
     })
   }, [vendorBid, numericAccessorials])
 
   const matchesExistingTemplate = useMemo(() => {
     return templates.some((template) => {
-      return Object.keys(emptyAccessorials).every((key) => {
+      return accessorialDefinitions.every(({ key }) => {
         const current = numericAccessorials[key] || 0
         const templateValue = template.accessorials[key] || 0
         return Math.abs(current - templateValue) < 0.01 // Account for floating point precision
@@ -167,12 +169,13 @@ export const BidSubmissionPage = () => {
   const handleLoadTemplate = (templateId: string) => {
     const template = templates.find((t) => t.id === templateId)
     if (template) {
-      const accessorialsAsStrings = Object.entries(template.accessorials).reduce<Record<string, string>>(
-        (acc, [key, value]) => {
-          acc[key] = value > 0 ? value.toString() : ''
+      const accessorialsAsStrings = accessorialDefinitions.reduce<Record<keyof AccessorialFees, string>>(
+        (acc, item) => {
+          const value = template.accessorials[item.key] ?? 0
+          acc[item.key] = value > 0 ? (item.kind === 'quantity' ? Math.round(value).toString() : value.toString()) : ''
           return acc
         },
-        {},
+        {} as Record<keyof AccessorialFees, string>,
       )
       setAccessorials(accessorialsAsStrings)
     }
@@ -221,16 +224,11 @@ export const BidSubmissionPage = () => {
       inlandLocationId: selectedRoute.inlandLocationId,
       baseRate: numericBaseRate,
       fsc: numericFsc,
-      accessorials: {
-        chassis: numericAccessorials.chassis || 0,
-        yardStorage: numericAccessorials.yardStorage || 0,
-        hazmat: numericAccessorials.hazmat || 0,
-        bond: numericAccessorials.bond || 0,
-        split: numericAccessorials.split || 0,
-        flip: numericAccessorials.flip || 0,
-        overweight: numericAccessorials.overweight || 0,
-        prepull: numericAccessorials.prepull || 0,
-      },
+      accessorials: accessorialDefinitions.reduce<AccessorialFees>((acc, item) => {
+        const value = numericAccessorials[item.key] || 0
+        acc[item.key] = item.kind === 'quantity' ? Math.max(0, Math.round(value)) : value
+        return acc
+      }, {} as AccessorialFees),
     })
   }
 
@@ -269,7 +267,7 @@ export const BidSubmissionPage = () => {
     }
   }
 
-  const resetAccessorials = () => setAccessorials(emptyAccessorials)
+  const resetAccessorials = () => setAccessorials(createEmptyAccessorialStrings())
 
   return (
     <Layout
@@ -473,27 +471,38 @@ export const BidSubmissionPage = () => {
                 </div>
               </div>
               <div className="mt-4 grid gap-4 md:grid-cols-4">
-                {Object.entries(accessorials).map(([key, value]) => (
-                  <div key={key} className="space-y-2">
-                    <Label className="text-xs font-semibold text-slate-500">
-                      {t(`vendor.bid.accessorialLabels.${key}`)}
-                    </Label>
-                    <div className="relative">
-                      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">
-                        $
-                      </span>
-                      <Input
-                        value={value}
-                        onChange={(e) =>
-                          setAccessorials((prev) => ({ ...prev, [key]: e.target.value.replace(/[^0-9.]/g, '') }))
-                        }
-                        placeholder="0.00"
-                        inputMode="decimal"
-                        className="h-11 rounded-2xl border-slate-200 pl-8 text-sm"
-                      />
+                {accessorialDefinitions.map(({ key, labelKey, kind }) => {
+                  const value = accessorials[key]
+                  const isQuantity = kind === 'quantity'
+                  return (
+                    <div key={key} className="space-y-2">
+                      <Label className="text-xs font-semibold text-slate-500">
+                        {t(`vendor.bid.accessorialLabels.${labelKey}`)}
+                      </Label>
+                      <div className="relative">
+                        {!isQuantity && (
+                          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">
+                            $
+                          </span>
+                        )}
+                        <Input
+                          value={value}
+                          onChange={(e) =>
+                            setAccessorials((prev) => ({
+                              ...prev,
+                              [key]: isQuantity
+                                ? e.target.value.replace(/[^0-9]/g, '')
+                                : e.target.value.replace(/[^0-9.]/g, ''),
+                            }))
+                          }
+                          placeholder={isQuantity ? '0' : '0.00'}
+                          inputMode={isQuantity ? 'numeric' : 'decimal'}
+                          className={`h-11 rounded-2xl border-slate-200 ${isQuantity ? 'pl-4' : 'pl-8'} text-sm`}
+                        />
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </section>
           </div>

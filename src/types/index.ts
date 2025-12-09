@@ -45,13 +45,19 @@ export interface Vendor {
 
 export interface AccessorialFees {
   chassis: number
-  yardStorage: number
-  hazmat: number
-  bond: number
-  split: number
-  flip: number
-  overweight: number
+  chassisDaysMin: number
+  chassisSplit: number
+  triAxle: number
+  storage: number
   prepull: number
+  detentionHoursFree: number
+  detentionPerHour: number
+  overweight: number
+  hazmat: number
+  drop: number
+  layover: number
+  bond: number
+  stopOff: number
 }
 
 export interface Bid {
@@ -98,7 +104,7 @@ export interface AccessorialTemplate {
   id: string
   name: string
   vendorId: string
-  accessorials: Record<string, number>
+  accessorials: AccessorialFees
   createdAt: string
 }
 

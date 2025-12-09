@@ -16,6 +16,8 @@ import { Layout } from '@/components/Layout'
 import { getCityById } from '@/lib/mock-data'
 import { RouteCreationModal } from './RouteCreationModal'
 import { useBidsByPortRampRegionQuery, useBidsByRouteQuery, useRoutesQuery, useVendorsQuery } from '@/lib/query-hooks'
+import { accessorialMap, accessorials as accessorialDefinitions } from '@/lib/accessorials'
+import { AccessorialFees } from '@/types'
 
 export const RateManagement = () => {
   const { t } = useTranslation()
@@ -100,6 +102,14 @@ export const RateManagement = () => {
       style: 'currency',
       currency: 'USD',
     }).format(value)
+
+  const formatAccessorialValue = (key: keyof AccessorialFees, value: number) => {
+    const kind = accessorialMap[key]?.kind
+    if (kind === 'quantity') {
+      return value.toString()
+    }
+    return formatCurrency(value)
+  }
 
   const toggleBidExpansion = (bidId: string) => {
     setExpandedBids((prev) => {
@@ -253,13 +263,15 @@ export const RateManagement = () => {
                                 Accessorial Fees
                               </p>
                               <ul className="grid gap-4 md:grid-cols-4 list-none p-0 m-0" role='list'>
-                                {Object.entries(bid.accessorials).map(([key, value]) => (
+                                {accessorialDefinitions.map(({ key, labelKey }) => (
                                   <li key={key} className="space-y-2" role='listitem'>
                                     <p className="text-xs font-semibold text-slate-500">
-                                      {t(`vendor.bid.accessorialLabels.${key}`)}
+                                      {t(`vendor.bid.accessorialLabels.${labelKey}`)}
                                     </p>
                                     <div className="h-11 rounded-2xl border border-slate-100 bg-slate-50 px-4 flex items-center">
-                                      <p className="text-sm font-semibold text-slate-900">{formatCurrency(value)}</p>
+                                      <p className="text-sm font-semibold text-slate-900">
+                                        {formatAccessorialValue(key, bid.accessorials[key] ?? 0)}
+                                      </p>
                                     </div>
                                   </li>
                                 ))}

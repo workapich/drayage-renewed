@@ -1,4 +1,5 @@
 import { City, Vendor, Bid, Route, Statistics } from '@/types'
+import { createZeroAccessorials } from '@/lib/accessorials'
 
 // Port Locations (from picture 1)
 const portRampRegions: City[] = [
@@ -306,16 +307,7 @@ const generateBids = (): Bid[] => {
         baseRate,
         fsc,
         total,
-        accessorials: {
-          chassis: 0,
-          yardStorage: 0,
-          hazmat: 0,
-          bond: 0,
-          split: 0,
-          flip: 0,
-          overweight: 0,
-          prepull: 0,
-        },
+        accessorials: createZeroAccessorials(),
         submittedAt: new Date(2025, 0, 14 - vendorIdx - routeIdx, 14 + vendorIdx, 20).toISOString(),
         status,
       })

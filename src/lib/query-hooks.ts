@@ -148,7 +148,7 @@ export const useSaveTemplateMutation = () => {
     }: {
       vendorId: string
       name: string
-      accessorials: Record<string, number>
+      accessorials: AccessorialFees
     }) => dataService.saveTemplate(vendorId, name, accessorials),
     onSuccess: (template) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.templates(template.vendorId) })

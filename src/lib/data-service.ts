@@ -108,7 +108,7 @@ export const dataService = {
     return storage.updateVendorWhitelistPermission(vendorId, canWhitelistVendors)
   },
 
-  saveTemplate(vendorId: string, name: string, accessorials: Record<string, number>): AccessorialTemplate {
+  saveTemplate(vendorId: string, name: string, accessorials: AccessorialFees): AccessorialTemplate {
     if (!vendorId) throw new Error('Vendor ID is required')
     if (!name || name.trim() === '') throw new Error('Template name is required')
 
