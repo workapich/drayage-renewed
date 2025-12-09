@@ -15,7 +15,7 @@ import {
 import { Layout } from '@/components/Layout'
 import { getCityById } from '@/lib/mock-data'
 import { RouteCreationModal } from './RouteCreationModal'
-import { useBidsByPortRampRegionQuery, useBidsByRouteQuery, useRoutesQuery } from '@/lib/query-hooks'
+import { useBidsByPortRampRegionQuery, useBidsByRouteQuery, useRoutesQuery, useVendorsQuery } from '@/lib/query-hooks'
 
 export const RateManagement = () => {
   const { t } = useTranslation()
@@ -28,6 +28,7 @@ export const RateManagement = () => {
   const { data: routes = [] } = useRoutesQuery(portRampRegionId)
   const { data: allPortRampRegionBids = [] } = useBidsByPortRampRegionQuery(portRampRegionId ?? '')
   const { data: bids = [] } = useBidsByRouteQuery(selectedDestinationId ?? '')
+  const { data: vendors = [] } = useVendorsQuery()
 
   const portRampRegion = portRampRegionId ? getCityById(portRampRegionId) : null
 
@@ -44,6 +45,15 @@ export const RateManagement = () => {
   }, [routes])
 
   const selectedRoute = routes.find((r) => r.id === selectedDestinationId) ?? routes[0]
+
+  // Create a map of vendorId to MC-ID for quick lookup
+  const vendorMcidMap = useMemo(() => {
+    const map = new Map<string, string>()
+    vendors.forEach((vendor) => {
+      map.set(vendor.id, vendor.mcid)
+    })
+    return map
+  }, [vendors])
 
   const sortedBids = useMemo(() => {
     const clone = [...bids]
@@ -64,11 +74,16 @@ export const RateManagement = () => {
     )
   }
 
-  const filteredBids = sortedBids.filter(
-    (bid) =>
-      bid.vendorEmail.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      bid.vendorId.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
+  const filteredBids = sortedBids.filter((bid) => {
+    const query = searchQuery.toLowerCase()
+    const vendor = vendors.find((v) => v.id === bid.vendorId)
+    const mcid = vendor?.mcid.toLowerCase() || ''
+    return (
+      bid.vendorEmail.toLowerCase().includes(query) ||
+      bid.vendorId.toLowerCase().includes(query) ||
+      mcid.includes(query)
+    )
+  })
 
   const formatDate = (dateString: string) =>
     new Date(dateString).toLocaleString('en-US', {
@@ -176,7 +191,7 @@ export const RateManagement = () => {
             <Table>
               <TableHeader className="bg-slate-50/60">
                 <TableRow className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  <TableHead>{t('admin.rates.table.vendorId')}</TableHead>
+                  <TableHead>{t('admin.rates.table.mcid')}</TableHead>
                   <TableHead>{t('admin.rates.table.email')}</TableHead>
                   <TableHead>{t('admin.rates.table.destination')}</TableHead>
                   <TableHead>
@@ -218,7 +233,7 @@ export const RateManagement = () => {
                                 <ChevronRight className="h-4 w-4 text-slate-400" />
                               )}
                             </button>
-                            {bid.vendorId}
+                            {vendorMcidMap.get(bid.vendorId) || bid.vendorId}
                           </div>
                         </TableCell>
                         <TableCell className="text-slate-600">{bid.vendorEmail}</TableCell>

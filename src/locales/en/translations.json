@@ -159,8 +159,8 @@
       "title": "Vendor Management",
       "description": "Manage all vendors in the system and whitelist new emails.",
       "whitelistButton": "Whitelist Vendor Email",
-      "bulkWhitelistButton": "Bulk whitelist permissions",
-      "bulkWhitelistTitle": "Grant whitelist permissions",
+      "bulkWhitelistButton": "Bulk Whitelist Permissions",
+      "bulkWhitelistTitle": "Grant Whitelist Permissions",
       "bulkWhitelistDescription": "Select vendors to allow them to whitelist others.",
       "bulkWhitelistEmpty": "All vendors already have whitelist permissions.",
       "bulkWhitelistConfirm": "Grant permissions",
@@ -211,6 +211,7 @@
       "searchPlaceholder": "Search by vendor ID or email",
       "table": {
         "vendorId": "Vendor ID",
+        "mcid": "MC-ID",
         "email": "Email",
         "destination": "Inland Location",
         "submitted": "Submitted",
@@ -223,13 +224,17 @@
     "addVendor": {
       "title": "Add New Vendor(s)",
       "emailPlaceholder": "Email Address",
-      "emailHint": "Press Enter or comma to add multiple emails.",
+      "emailHint": "Press Enter or comma to add multiple emails, or paste comma-separated values.",
       "importButton": "Import from CSV",
       "importHint": "Upload a CSV file with email addresses (one per line or comma-separated).",
       "addButton": "Add Vendor",
       "csvNotAvailable": "CSV import is not available in the mock environment.",
       "allEmailsRegistered": "All provided emails are already registered.",
-      "vendorsAdded": "{{count}} vendor(s) added."
+      "vendorsAdded": "{{count}} vendor(s) added.",
+      "invalidEmail": "Invalid email address.",
+      "bulkAdded": "Successfully added {{count}} email(s).",
+      "bulkPartial": "Added {{added}} email(s), skipped {{skipped}} (already selected or invalid).",
+      "bulkNoneAdded": "No new emails were added (all already selected or invalid)."
     },
     "routeCreation": {
       "title": "Create New Route",

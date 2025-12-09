@@ -27,6 +27,7 @@ import {
   useVendorWhitelistPermissionMutation,
   useVendorsQuery,
 } from '@/lib/query-hooks'
+import { isValidEmail, processMultipleEmails } from '@/lib/utils'
 import type { VendorStatus } from '@/types'
 
 const statusStyles: Record<VendorStatus, string> = {
@@ -71,17 +72,27 @@ export const VendorManagement = () => {
   }
 
   const processVendorValue = (searchValue: string): { success: boolean; message?: string } => {
-    const trimmedValue = searchValue.trim().toLowerCase()
+    const trimmedValue = searchValue.trim()
     if (!trimmedValue) return { success: false }
 
+    // Check if input is an email and validate it
+    const isEmail = isValidEmail(trimmedValue)
+    const searchLower = trimmedValue.toLowerCase()
+
     // Try to find vendor by email or MC-ID in all vendors
-    const vendor = vendors.find(
-      (v) =>
-        v.email.toLowerCase() === trimmedValue ||
-        v.mcid.toLowerCase() === trimmedValue ||
-        v.email.toLowerCase().includes(trimmedValue) ||
-        v.mcid.toLowerCase().includes(trimmedValue),
-    )
+    const vendor = vendors.find((v) => {
+      if (isEmail) {
+        // For emails, do exact match (case-insensitive)
+        return v.email.toLowerCase() === searchLower
+      } else {
+        // For MC-IDs, allow exact match or partial match
+        return (
+          v.mcid.toLowerCase() === searchLower ||
+          v.mcid.toLowerCase().includes(searchLower) ||
+          v.email.toLowerCase().includes(searchLower)
+        )
+      }
+    })
 
     if (!vendor) {
       return { success: false, message: t('admin.vendors.bulkWhitelist.notFound') }
@@ -101,17 +112,56 @@ export const VendorManagement = () => {
     return { success: true }
   }
 
-  const processMultipleValues = (value: string) => {
-    // Split by comma and process each value
-    const values = value.split(',').map((v) => v.trim()).filter((v) => v.length > 0)
-    
-    if (values.length === 0) return
+  const processBulkInput = (value: string) => {
+    // Use utility function to process emails
+    const existingEmails = vendors
+      .filter((v) => selectedVendorIds.includes(v.id))
+      .map((v) => v.email.toLowerCase())
+    const emailResult = processMultipleEmails(value, existingEmails)
 
+    // Process valid emails
     let successCount = 0
     let skippedCount = 0
     const messages: string[] = []
 
-    values.forEach((val) => {
+    // Process valid emails
+    emailResult.valid.forEach((email) => {
+      const result = processVendorValue(email)
+      if (result.success) {
+        successCount++
+      } else if (result.message) {
+        skippedCount++
+        if (!messages.includes(result.message)) {
+          messages.push(result.message)
+        }
+      }
+    })
+
+    // Handle invalid emails
+    if (emailResult.invalid.length > 0) {
+      skippedCount += emailResult.invalid.length
+      const invalidMessage = `${emailResult.invalid.length} invalid email(s) skipped`
+      if (!messages.includes(invalidMessage)) {
+        messages.push(invalidMessage)
+      }
+    }
+
+    // Handle duplicate emails
+    if (emailResult.duplicates.length > 0) {
+      skippedCount += emailResult.duplicates.length
+      const duplicateMessage = `${emailResult.duplicates.length} duplicate email(s) skipped`
+      if (!messages.includes(duplicateMessage)) {
+        messages.push(duplicateMessage)
+      }
+    }
+
+    // Also process non-email values (MC-IDs) that might be in the input
+    const allValues = value.split(',').map((v) => v.trim()).filter((v) => v.length > 0)
+    const nonEmailValues = allValues.filter(
+      (val) => !isValidEmail(val) && !emailResult.valid.includes(val.toLowerCase()),
+    )
+
+    nonEmailValues.forEach((val) => {
       const result = processVendorValue(val)
       if (result.success) {
         successCount++
@@ -147,8 +197,7 @@ export const VendorManagement = () => {
 
     // Check if value contains commas (bulk paste)
     if (value.includes(',')) {
-      // Process all comma-separated values
-      processMultipleValues(value)
+      processBulkInput(value)
     }
   }
 
@@ -160,7 +209,7 @@ export const VendorManagement = () => {
 
       // If input contains commas, process all values
       if (searchValue.includes(',')) {
-        processMultipleValues(searchValue)
+        processBulkInput(searchValue)
       } else {
         // Process single value
         const result = processVendorValue(searchValue)
